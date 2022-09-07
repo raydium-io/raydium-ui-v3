@@ -30,19 +30,22 @@
     "dev": "NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "sdk-local": "yarn add @raydium-io/raydium-sdk@file:../raydium-sdk/lib",
+    "sdk-update": "yarn remove @raydium-io/raydium-sdk && yarn sdk-local"
   },
   "dependencies": {
     "@chakra-ui/react": "^2.3.1",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@project-serum/serum": "^0.13.65",
-    "@raydium-io/raydium-sdk": "../raydium-sdk/lib",
+    "@raydium-io/raydium-sdk": "file:../raydium-sdk/lib",
     "@solana/spl-token": "^0.3.4",
     "@solana/wallet-adapter-base": "^0.9.15",
     "@solana/wallet-adapter-react": "^0.15.17",
     "@solana/wallet-adapter-react-ui": "^0.9.15",
     "@solana/wallet-adapter-wallets": "^0.18.4",
+    "@solana/web3.js": "^1.56.2",
     "@types/ramda": "^0.28.15",
     "@typescript-eslint/eslint-plugin": "^5.36.2",
     "big.js": "^6.2.1",
@@ -56,6 +59,7 @@
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-infinite-scroll-component": "^6.1.0",
+    "rxjs": "^7.5.6",
     "toformat": "^2.0.0",
     "zustand": "^4.1.1"
   },
@@ -65,6 +69,8 @@
     "@types/react-dom": "^18.0.0",
     "eslint": "^8.22.0",
     "eslint-config-next": "^12.2.5",
+    "eslint-plugin-react": "^7.31.7",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "prettier": "^2.7.1",
     "shx": "^0.3.4",
     "typescript": "^4.7.4"

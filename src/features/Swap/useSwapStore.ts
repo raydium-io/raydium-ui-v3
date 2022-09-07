@@ -6,6 +6,7 @@ interface SwapStore {
   computing: boolean
   computedSwapResult: GetAmountOutReturn | null
   computeSwapAmountAct: (params: ComputeParams) => Promise<void>
+  swapTokenAct: (params: { inputMint: PublicKeyish; amount: BigNumberish }) => Promise<string[] | undefined>
 }
 
 export interface ComputeParams {
@@ -40,7 +41,7 @@ export const useSwapStore = createStore<SwapStore>(
       const slippage = get().slippage
       const computedSwapResult = await raydium.trade.getBestAmountOut({
         pools: routedPools, // optional, pass only if called getAvailablePools
-        amountIn: raydium.decimalAmount({ mint: inputMint, amount: amount })!,
+        amountIn: raydium.decimalAmount({ mint: inputMint, amount })!,
         inputToken: raydium.mintToToken(inputMint),
         outputToken: raydium.mintToToken(outputMint),
         slippage: new Percent(slippage, 100) // means 1 percent
@@ -48,21 +49,25 @@ export const useSwapStore = createStore<SwapStore>(
 
       set({ computedSwapResult, computing: false }, false, action)
     },
-    swapTokenAct: async (params: { inputMint: PublicKeyish; amount: BigNumberish }) => {
+    swapTokenAct: async (params) => {
       const raydium = useAppStore.getState().raydium
       const computedSwapResult = get().computedSwapResult
       if (!raydium || !computedSwapResult) return
 
       const { inputMint, amount } = params
-      const { execute, transactions } = await raydium.trade.swap({
+      const { execute } = await raydium.trade.swap({
         routes: computedSwapResult.routes,
         routeType: computedSwapResult.routeType,
         amountIn: raydium.mintToTokenAmount({ mint: inputMint, amount })!,
         amountOut: computedSwapResult.minAmountOut,
         fixedSide: 'in'
       })
-      // await execute()
-      set({ computedSwapResult: null }, false, { type: 'swapTokenAct' })
+
+      try {
+        return await execute()
+      } catch {
+        return
+      }
     }
   }),
   'useSwapStore'

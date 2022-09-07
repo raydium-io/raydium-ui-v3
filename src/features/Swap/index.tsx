@@ -1,27 +1,25 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
-import { useTokenStore } from '@/store/useTokenStore'
-import { useSwapStore, ComputeParams } from './useSwapStore'
-
-import { TokenJson } from '@raydium-io/raydium-sdk'
-import TokenInput from './components/TokenInput'
-import TokenSelectDialog, { TokenSelectRef } from './components/TokenSelectDialog'
-import ExchangeRate from './components/ExchangeRate'
+import { useEffect, useState, useCallback } from 'react'
+import { Button } from '@chakra-ui/react'
 import { PublicKey } from '@solana/web3.js'
+import { TokenJson } from '@raydium-io/raydium-sdk'
 import shallow from 'zustand/shallow'
 import { debounce } from 'lodash'
 
+import { useTokenStore, useTokenAccountStore } from '@/store'
+import { useSwapStore, ComputeParams } from './useSwapStore'
+import TokenInput from '@/component/TokenInput'
+import ExchangeRate from '@/component/ExchangeRate'
+
 function Swap() {
-  const { tokenList, tokenMap } = useTokenStore(
+  const { tokenMap } = useTokenStore(
     (s) => ({
-      tokenList: s.tokenList,
       tokenMap: s.tokenMap
     }),
     shallow
   )
-  const { computedSwapResult, computeSwapAmountAct, computing } = useSwapStore()
+  const [getTokenBalanceUiAmount, tokenAccountMap] = useTokenAccountStore((s) => [s.getTokenBalanceUiAmount, s.tokenAccountMap], shallow)
+  const { computedSwapResult, computeSwapAmountAct, swapTokenAct, computing } = useSwapStore()
 
-  const tokenSelectorRef = useRef<TokenSelectRef>(null)
-  const tokenSelectSideRef = useRef<string>('')
   const [mintInput, setMintInput] = useState<string>('4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R')
   const [mintOutput, setMintOutput] = useState<string>(PublicKey.default.toBase58())
   const [amountIn, setAmountIn] = useState<string>('')
@@ -31,7 +29,7 @@ function Swap() {
   const handleCompute = useCallback(
     debounce((params: ComputeParams) => {
       computeSwapAmountAct(params)
-    }, 200),
+    }, 100),
     [computeSwapAmountAct]
   )
 
@@ -39,16 +37,25 @@ function Swap() {
     setAmountIn(val)
   }, [])
 
-  const handleClickTokenIcon = useCallback((side?: 'input' | 'output') => {
-    tokenSelectSideRef.current = side || ''
-    tokenSelectorRef.current?.open()
+  const handleSelectToken = useCallback((token: TokenJson, side?: string) => {
+    if (side === 'input') {
+      setMintInput(token.mint)
+      setMintOutput((mint) => (token.mint === mint ? '' : mint))
+      return
+    }
+    setMintOutput(token.mint)
+    setMintInput((mint) => (token.mint === mint ? '' : mint))
   }, [])
 
-  const handleSelectToken = useCallback((token: TokenJson) => {
-    const setFn = tokenSelectSideRef.current === 'input' ? setMintInput : setMintOutput
-    setFn(token.mint)
-    tokenSelectorRef.current?.close()
-  }, [])
+  const handleSwap = useCallback(() => {
+    swapTokenAct({ inputMint: mintInput, amount: amountIn })
+  }, [swapTokenAct, mintInput, amountIn])
+
+  const handleChangeSide = useCallback(() => {
+    setMintInput(mintOutput)
+    setAmountIn(computedSwapResult?.amountOut.toExact() || '')
+    setMintOutput(mintInput)
+  }, [mintInput, mintOutput, computedSwapResult])
 
   useEffect(() => {
     if (!mintInput || !mintOutput) return
@@ -57,33 +64,42 @@ function Swap() {
       outputMint: mintOutput,
       amount: amountIn
     })
-  }, [mintInput, mintOutput, amountIn])
+  }, [mintInput, mintOutput, amountIn, handleCompute])
+
+  const [balanceInput, balanceOutput] = [
+    mintInput ? getTokenBalanceUiAmount(mintInput) : '',
+    mintOutput ? getTokenBalanceUiAmount(mintOutput) : ''
+  ]
+
+  const ata = tokenAccountMap.get(mintInput)?.[0]
+  const isButtonDisabled = !ata || ata.amount.toNumber() < Number(amountIn)
 
   return (
     <>
       Swap
       <div>
-        <TokenInput side="input" token={tokenInput} onClickIcon={handleClickTokenIcon} value={amountIn} onChange={handleInputChange} />
+        <TokenInput side="input" token={tokenInput} value={amountIn} onChange={handleInputChange} onTokenChange={handleSelectToken} />
+        {balanceInput} {tokenInput?.symbol}
+        <Button display="block" my="10px" onClick={handleChangeSide}>
+          ^
+        </Button>
         <TokenInput
           side="output"
           token={tokenOutput}
-          onClickIcon={handleClickTokenIcon}
           value={computedSwapResult?.amountOut.toExact() || ''}
+          onTokenChange={handleSelectToken}
           readonly={true}
-          loading={computing}
         />
-
-        {computedSwapResult && <>min received {computedSwapResult?.minAmountOut.toExact()}</>}
-        {computedSwapResult?.executionPrice && (
+        <div>
+          {balanceOutput} {tokenOutput?.symbol}
+        </div>
+        {computedSwapResult && <div>min received {computedSwapResult?.minAmountOut.toExact()}</div>}
+        {computedSwapResult?.executionPrice && tokenInput && tokenOutput && (
           <ExchangeRate tokenInput={tokenInput!} tokenOutput={tokenOutput!} executionPrice={computedSwapResult?.executionPrice} />
         )}
-
-        <TokenSelectDialog
-          ref={tokenSelectorRef}
-          tokenList={tokenList}
-          selectedValue={new Set([mintInput, mintOutput])}
-          onSelectValue={handleSelectToken}
-        />
+        <Button disabled={isButtonDisabled} onClick={handleSwap} isLoading={computing} loadingText="Loading pool..">
+          Swap
+        </Button>
       </div>
     </>
   )
