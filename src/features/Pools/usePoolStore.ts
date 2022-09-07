@@ -20,7 +20,7 @@ export const usePoolStore = createStore<PoolStore>(
       if (!raydium) return
       raydium.liquidity.loadPairs({ forceUpdate: !!forceUpdate }).then(() => {
         set({
-          pairInfoList: raydium.liquidity.allPairs,
+          pairInfoList: raydium.liquidity.allPairs.filter((pair) => pair.name.indexOf('unknown') === -1),
           pairInfoMap: raydium.liquidity.allPairsMap
         })
       })

@@ -102,7 +102,7 @@ const TokenSelectDialog = function TokenSelectDialog(props: Props) {
                         <Avatar size="sm" mr="5px" name={token.symbol} src={token.icon} />
                         {token.symbol}
                       </div>
-                      <div>{getTokenBalanceUiAmount(token.mint)}</div>
+                      <div>{getTokenBalanceUiAmount(token.mint).text}</div>
                     </ListItem>
                   ))}
                 </List>

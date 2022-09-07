@@ -1,18 +1,21 @@
-import { PublicKeyish, BigNumberish, Percent, GetAmountOutReturn } from '@raydium-io/raydium-sdk'
+import { Percent, GetAmountOutReturn, WSOLMint, SOLMint } from '@raydium-io/raydium-sdk'
 import { createStore, useAppStore } from '@/store'
+import { isSolWSol, isSol, isWSol } from './util'
 
 interface SwapStore {
   slippage: number
   computing: boolean
   computedSwapResult: GetAmountOutReturn | null
   computeSwapAmountAct: (params: ComputeParams) => Promise<void>
-  swapTokenAct: (params: { inputMint: PublicKeyish; amount: BigNumberish }) => Promise<string[] | undefined>
+  swapTokenAct: (params: { inputMint: string; amount: string }) => Promise<string | string[] | undefined>
+  unWrapSolAct: (amount: string) => Promise<string | undefined>
+  wrapSolAct: (amount: string) => Promise<string | undefined>
 }
 
 export interface ComputeParams {
-  inputMint: PublicKeyish
-  outputMint: PublicKeyish
-  amount: BigNumberish
+  inputMint: string
+  outputMint: string
+  amount: string
 }
 
 const initSwapState = {
@@ -28,9 +31,29 @@ export const useSwapStore = createStore<SwapStore>(
     computeSwapAmountAct: async (params: ComputeParams) => {
       const raydium = useAppStore.getState().raydium
       if (!raydium) return
-
       const action = { type: 'computeSwapAmountAct' }
       const { inputMint, outputMint, amount } = params
+      if (isSolWSol(inputMint, outputMint)) {
+        set(
+          {
+            computedSwapResult: {
+              amountOut: raydium.mintToTokenAmount({ mint: inputMint, amount }),
+              minAmountOut: raydium.mintToTokenAmount({ mint: outputMint, amount }),
+              priceImpact: new Percent(1, 100),
+              routes: [],
+              routeType: 'amm',
+              fixedSide: 'in',
+              currentPrice: null,
+              executionPrice: null,
+              fee: []
+            }
+          },
+          false,
+          action
+        )
+        return
+      }
+
       const { routedPools } = await raydium.trade.getAvailablePools(params)
       if (amount === '') {
         set(() => ({ computing: false, computedSwapResult: null }), false, action)
@@ -49,12 +72,18 @@ export const useSwapStore = createStore<SwapStore>(
 
       set({ computedSwapResult, computing: false }, false, action)
     },
+
     swapTokenAct: async (params) => {
       const raydium = useAppStore.getState().raydium
       const computedSwapResult = get().computedSwapResult
       if (!raydium || !computedSwapResult) return
 
       const { inputMint, amount } = params
+      if (isSolWSol(inputMint, computedSwapResult.amountOut.token.mint.toBase58())) {
+        if (isSol(inputMint)) return await get().wrapSolAct(amount)
+        if (isWSol(inputMint)) return await get().unWrapSolAct(amount)
+      }
+
       const { execute } = await raydium.trade.swap({
         routes: computedSwapResult.routes,
         routeType: computedSwapResult.routeType,
@@ -63,6 +92,28 @@ export const useSwapStore = createStore<SwapStore>(
         fixedSide: 'in'
       })
 
+      try {
+        return await execute()
+      } catch {
+        return
+      }
+    },
+
+    unWrapSolAct: async (amount: string): Promise<string | undefined> => {
+      const raydium = useAppStore.getState().raydium
+      if (!raydium) return
+      const { execute } = await raydium.trade.unWrapWSol(raydium.decimalAmount({ mint: WSOLMint, amount })!)
+      try {
+        return await execute()
+      } catch {
+        return
+      }
+    },
+
+    wrapSolAct: async (amount: string): Promise<string | undefined> => {
+      const raydium = useAppStore.getState().raydium
+      if (!raydium) return
+      const { execute } = await raydium.trade.wrapWSol(raydium.decimalAmount({ mint: SOLMint, amount })!)
       try {
         return await execute()
       } catch {

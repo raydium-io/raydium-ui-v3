@@ -2,6 +2,8 @@ import {
   Avatar,
   CircularProgress,
   Flex,
+  Box,
+  Text,
   InputGroup,
   InputRightElement,
   NumberInput,
@@ -14,19 +16,24 @@ import { useCallback, useEffect, useRef } from 'react'
 import TokenSelectDialog from './TokenSelectDialog'
 
 interface Props {
+  id?: string
+  name?: string
   token?: SplToken | TokenJson
   readonly?: boolean
   loading?: boolean
   value: string
   side?: string
+  balance?: string
   onChange?: (val: string, valNumber: number, side?: string) => void
   onTokenChange?: (token: TokenJson, side?: string) => void
+  onFocus?: (side?: string) => void
 }
 
 function TokenInput(props: Props) {
-  const { token, onChange, onTokenChange, side, readonly, value, loading } = props
+  const { id, name, token, balance, onChange, onTokenChange, onFocus, side, readonly, value, loading } = props
   const { isOpen, onOpen, onClose } = useDisclosure()
   const valRef = useRef(value)
+  const a = useRef(null)
   valRef.current = value
 
   const handleChange = useCallback(
@@ -57,32 +64,46 @@ function TokenInput(props: Props) {
     [token]
   )
 
+  const handleFocus = useCallback(() => {
+    onFocus?.(side)
+  }, [onFocus, side])
+
   useEffect(() => {
     const val = handleParseVal(valRef.current)
     handleChange(val, Number(val))
   }, [handleParseVal, handleChange])
 
   return (
-    <>
+    <Box width="fit-content">
+      {balance && (
+        <Flex justifyContent="flex-end">
+          {balance}
+          {token?.symbol}
+        </Flex>
+      )}
       <Flex alignItems="center" mb="10px">
-        <Avatar
-          name={token?.name || '-'}
-          src={token?.icon}
-          bg="transparent"
-          cursor="pointer"
-          mr="10px"
-          color="blackAlpha.100"
-          onClick={onOpen}
-        />
-        <InputGroup sx={{ width: 'fit-content' }}>
-          <NumberInput onChange={handleChange} parse={handleParseVal} isDisabled={readonly || false} value={value}>
+        <Avatar name={token?.name || '-'} src={token?.icon} bg="transparent" cursor="pointer" color="blackAlpha.100" onClick={onOpen} />
+        <Text mx="6px" minW="40px">
+          {token?.symbol}
+        </Text>
+        <InputGroup sx={{ width: 'fit-content', mr: '6px' }}>
+          <NumberInput
+            ref={a}
+            id={id}
+            name={name}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            parse={handleParseVal}
+            isDisabled={readonly || false}
+            value={value}
+          >
             <NumberInputField />
           </NumberInput>
           {loading && <InputRightElement pointerEvents="none" children={<CircularProgress size="20px" isIndeterminate />} />}
         </InputGroup>
       </Flex>
       {<TokenSelectDialog isOpen={isOpen} onClose={onClose} onSelectValue={handleSelectToken} />}
-    </>
+    </Box>
   )
 }
 

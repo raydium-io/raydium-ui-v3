@@ -15,30 +15,40 @@ import { useAppStore } from './useAppStore'
 interface LiquidityStore {
   poolList: LiquidityPoolJsonInfo[]
   poolMap: Map<string, LiquidityPoolJsonInfo>
-  loadPoolsAct: (forceUpdate?: boolean) => void
-
   currentSDKPoolInfo: SDKParsedLiquidityInfo | null
-  loadSdkPoolInfo: (params: { inputMint: string; outputMint: string }) => void
+  loadingPoolInfo: boolean
+  poolNotFound: boolean
 
+  loadPoolsAct: (forceUpdate?: boolean) => void
+  loadSdkPoolInfoAct: (params: { inputMint: string; outputMint: string }) => void
   computePairAmountAct: (parmas: {
     poolId: PublicKeyish
     fixedAmount: TokenAmount
     anotherToken: Token
   }) => Promise<{ anotherAmount: TokenAmount; maxAnotherAmount: TokenAmount }>
-
   addLiquidityAct: (params: {
     poolId: PublicKeyish
     amountInA: TokenAmount
     amountInB: TokenAmount
     fixedSide: LiquiditySide
   }) => Promise<string>
+  removeLiquidityAct: (params: {
+    poolId: string
+    amount: TokenAmount
+    config?: {
+      bypassAssociatedCheck?: boolean
+    }
+  }) => Promise<string>
+  resetComputeStateAct: () => void
 }
 
 const initLiquiditySate = {
   poolList: [],
   poolMap: new Map(),
   currentSDKPoolInfo: null,
-  computePairAmountAct: null
+  computePairAmountAct: null,
+  loadingPoolInfo: false,
+  poolNotFound: false
 }
 
 export const useLiquidityStore = createStore<LiquidityStore>(
@@ -54,11 +64,16 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         })
       })
     },
-    loadSdkPoolInfo: ({ inputMint, outputMint }) => {
-      const action = { type: 'loadSdkPoolInfo' }
+    loadSdkPoolInfoAct: ({ inputMint, outputMint }) => {
+      const action = { type: 'loadSdkPoolInfoAct' }
       const raydium = useAppStore.getState().raydium
       if (!raydium) return
+      if (!inputMint || !outputMint) {
+        set({ currentSDKPoolInfo: null, loadingPoolInfo: false, poolNotFound: false }, false, action)
+        return
+      }
 
+      set({ loadingPoolInfo: true, poolNotFound: false }, false, action)
       const [inputKey, outputKey] = [
         validateAndParsePublicKey({ publicKey: inputMint, transformSol: true }).toBase58(),
         validateAndParsePublicKey({ publicKey: outputMint, transformSol: true }).toBase58()
@@ -68,23 +83,25 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         (pool) =>
           (pool.baseMint === inputKey && pool.quoteMint === outputKey) || (pool.quoteMint === inputKey && pool.baseMint === outputKey)
       )
-      if (!pool) return
+      if (!pool) {
+        set({ loadingPoolInfo: false, poolNotFound: true }, false, action)
+        return
+      }
 
       raydium.liquidity.sdkParseJsonLiquidityInfo([pool]).then((data) => {
-        set({ currentSDKPoolInfo: data[0] }, false, action)
+        set({ currentSDKPoolInfo: data[0], loadingPoolInfo: false, poolNotFound: false }, false, action)
       })
     },
-    computePairAmountAct: async (params) => {
+    computePairAmountAct: (params) => {
       const raydium = useAppStore.getState().raydium
 
       const { poolId, fixedAmount, anotherToken } = params
-      const res = await raydium!.liquidity.computePairAmount({
+      return raydium!.liquidity.computePairAmount({
         poolId,
         amount: fixedAmount,
         anotherToken,
         slippage: new Percent(1, 100)
       })
-      return res
     },
 
     addLiquidityAct: async (params) => {
@@ -95,6 +112,25 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       } catch {
         return ''
       }
+    },
+
+    removeLiquidityAct: async (params) => {
+      const raydium = useAppStore.getState().raydium
+      const { poolId, amount, config } = params
+      const { execute } = await raydium!.liquidity.removeLiquidity({
+        poolId,
+        amountIn: amount,
+        config
+      })
+      try {
+        return await execute()
+      } catch {
+        return ''
+      }
+    },
+
+    resetComputeStateAct: () => {
+      set({ currentSDKPoolInfo: null, loadingPoolInfo: false, poolNotFound: false }, false, { type: 'resetComputeStateAct' })
     }
   }),
   'useLiquidityStore'

@@ -1,4 +1,4 @@
-import { parseTokenAccountResp, TokenAccount, TokenAccountRaw, parseNumberInfo, Fraction } from '@raydium-io/raydium-sdk'
+import { parseTokenAccountResp, TokenAccount, TokenAccountRaw, parseNumberInfo, Fraction, WSOLMint } from '@raydium-io/raydium-sdk'
 import { Connection, PublicKey } from '@solana/web3.js'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import createStore from './createStore'
@@ -11,7 +11,7 @@ interface TokenAccountStore {
   tokenAccountMap: Map<string, TokenAccount[]>
 
   fetchTokenAccountAct: (params: { connection: Connection; owner: PublicKey }) => Promise<void>
-  getTokenBalanceUiAmount: (mint: string, decimals?: number) => string
+  getTokenBalanceUiAmount: (mint: string, decimals?: number) => { amount: Fraction; text: string; gte: (val: string) => boolean }
 }
 
 const initTokenAccountSate = {
@@ -54,13 +54,33 @@ export const useTokenAccountStore = createStore<TokenAccountStore>(
       useTokenStore.setState({ tokenList: JSON.parse(JSON.stringify(tokenList)) }, false, { type: 'fetchTokenAccountAct' })
     },
     getTokenBalanceUiAmount: (mint, decimals) => {
+      const defaultVal = { amount: new Fraction(0, 1), text: '0', gte: () => false }
       const tokenInfo = useTokenStore.getState().tokenMap.get(mint)
       const tokenDecimal = decimals || tokenInfo?.decimals || 0
       const tokenAccount = get().tokenAccountMap.get(mint)?.[0]
-      if (!tokenAccount) return ''
-      if (!tokenInfo && !decimals) return '0'
-      const numberDetails = parseNumberInfo(tokenAccount.amount)
-      return new Fraction(numberDetails.numerator, numberDetails.denominator).div(new BN(10 ** tokenDecimal)).toSignificant(tokenDecimal)
+      if (!tokenAccount) return defaultVal
+      if (!tokenInfo && !decimals) return defaultVal
+
+      let amount = tokenAccount.amount
+      // wsol might have lots of ata, so sum them up
+      if (mint === WSOLMint.toBase58()) {
+        amount = new BN(0)
+        get()
+          .tokenAccountMap.get(mint)!
+          .forEach((acc) => {
+            amount = amount.add(acc.amount)
+          })
+      }
+
+      const numberDetails = parseNumberInfo(amount)
+      const f = new Fraction(numberDetails.numerator, numberDetails.denominator).div(new BN(10 ** tokenDecimal))
+      return {
+        amount: f,
+        text: f.toSignificant(tokenDecimal),
+        gte: (val: string) => {
+          return !!val && Number(f.toSignificant(tokenDecimal)) > Number(val)
+        }
+      }
     }
   }),
   'useTokenAccountStore'
