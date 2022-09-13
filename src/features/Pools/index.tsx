@@ -4,12 +4,14 @@ import { PairJsonInfo, ApiJsonPairInfo } from '@raydium-io/raydium-sdk'
 import Link from 'next/link'
 import { usePoolStore } from './usePoolStore'
 import { formatLocaleStr } from '@/util/number'
-import { useTokenStore, useLiquidityStore, useTokenAccountStore } from '@/store'
+import { useTokenStore, useLiquidityStore, useTokenAccountStore, useAppStore } from '@/store'
 
 import { Avatar, Flex, Box, Button, Switch, useDisclosure } from '@chakra-ui/react'
 import useSort from '@/hooks/useSort'
+import ConnectedOnly from '@/component/ConnectedOnly'
 import WithdrawLiquidity from './components/WithdrawLiquidity'
 import LoadingSkeleton from './components/LoadingSkeleton'
+import { wSolToSol } from '@/util/token'
 
 const perPage = 20
 const col1Style = { flex: 2, minWidth: '200px', p: '4px 6px', mb: '10px' }
@@ -17,26 +19,30 @@ const colStyle = { flex: 1, minWidth: '15%', p: '4px 6px', mb: '10px' }
 
 function Pools() {
   const { isOpen, onClose, onOpen } = useDisclosure()
+  const connected = useAppStore((s) => s.connected)
   const pairInfoList = usePoolStore((s) => s.pairInfoList)
   const poolMap = useLiquidityStore((s) => s.poolMap)
   const tokenMap = useTokenStore((s) => s.tokenMap)
-  const [getTokenBalanceUiAmount] = useTokenAccountStore((s) => [s.getTokenBalanceUiAmount, s.tokenAccounts])
+  const [getTokenBalanceUiAmount, tokenAccounts] = useTokenAccountStore((s) => [s.getTokenBalanceUiAmount, s.tokenAccounts])
 
   const [filteredList, setFilteredList] = useState<PairJsonInfo[]>([])
   const [displayList, setDisplayList] = useState<PairJsonInfo[]>([])
   const [showStaked, setShowStaked] = useState<boolean>(false)
   const modalDataRef = useRef<{ pairInfo: ApiJsonPairInfo; balance: string } | undefined>()
-  const { sortFn, onChangeSortData } = useSort({})
+  const { sortFn, onChangeSortData } = useSort({ defaultKey: 'volume7d' })
 
   useEffect(() => {
     const filteredList = showStaked
-      ? pairInfoList.filter((pair) =>
-          getTokenBalanceUiAmount(pair.lpMint, tokenMap.get(poolMap.get(pair.ammId)?.baseMint || '')?.decimals).gte('0')
+      ? pairInfoList.filter(
+          (pair) =>
+            connected &&
+            !getTokenBalanceUiAmount({ mint: pair.lpMint, decimals: tokenMap.get(poolMap.get(pair.ammId)?.baseMint || '')?.decimals })
+              .isZero
         )
       : pairInfoList
     setFilteredList(filteredList)
-    setDisplayList(filteredList.slice(0, perPage))
-  }, [pairInfoList, showStaked, getTokenBalanceUiAmount, tokenMap, poolMap])
+    setDisplayList((list) => sortFn(filteredList).slice(0, list.length || perPage))
+  }, [pairInfoList, showStaked, getTokenBalanceUiAmount, tokenMap, poolMap, tokenAccounts, connected])
 
   useEffect(() => {
     setFilteredList((list) => {
@@ -92,11 +98,10 @@ function Pools() {
             loader={<></>}
           >
             {displayList.map((pair) => {
-              const [baseToken, quoteToken] = [
-                tokenMap.get(poolMap.get(pair.ammId)?.baseMint || ''),
-                tokenMap.get(poolMap.get(pair.ammId)?.quoteMint || '')
-              ]
-              const balance = getTokenBalanceUiAmount(pair.lpMint, baseToken?.decimals)
+              const pool = poolMap.get(pair.ammId)
+              const [baseToken, quoteToken] = [tokenMap.get(pool?.baseMint || ''), tokenMap.get(pool?.quoteMint || '')]
+              pair
+              const balance = getTokenBalanceUiAmount({ mint: pair.lpMint, decimals: pool?.lpDecimals })
               return (
                 <Flex key={pair.ammId}>
                   <Box sx={col1Style}>
@@ -111,23 +116,25 @@ function Pools() {
                   <Box sx={colStyle}>${formatLocaleStr(pair.fee7d)}</Box>
                   <Box sx={colStyle}>{pair.apr7d}</Box>
                   <Box sx={colStyle}>
-                    <Link
-                      href={{
-                        pathname: '/liquidity',
-                        query: {
-                          baseMint: baseToken?.mint.toString(),
-                          quoteMint: quoteToken?.mint.toString()
-                        }
-                      }}
-                    >
-                      <Button size="sm">+</Button>
-                    </Link>
-                    {Number(balance) > 0 && (
-                      <Button onClick={() => handleClickRemove(pair, balance.text)} size="sm" ml="5px">
-                        -
-                      </Button>
-                    )}
-                    <div>{balance.text}</div>
+                    <ConnectedOnly>
+                      <Link
+                        href={{
+                          pathname: '/liquidity',
+                          query: {
+                            baseMint: wSolToSol(baseToken?.mint.toString()),
+                            quoteMint: wSolToSol(quoteToken?.mint.toString())
+                          }
+                        }}
+                      >
+                        <Button size="sm">+</Button>
+                      </Link>
+                      {!balance.isZero && (
+                        <Button onClick={() => handleClickRemove(pair, balance.text)} size="sm" ml="5px">
+                          -
+                        </Button>
+                      )}
+                      <div>{balance.text}</div>
+                    </ConnectedOnly>
                   </Box>
                 </Flex>
               )

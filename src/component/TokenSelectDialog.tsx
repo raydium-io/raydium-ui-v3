@@ -39,7 +39,9 @@ const TokenSelectDialog = function TokenSelectDialog(props: Props) {
   }, [tokenList])
 
   useEffect(() => {
-    const filteredList = tokenList.filter((token) => token.symbol.toLocaleLowerCase().indexOf(search.toLocaleLowerCase()) > -1)
+    const filteredList = tokenList.filter(
+      (token) => token.symbol.toLocaleLowerCase().indexOf(search.toLocaleLowerCase()) > -1 || token.mint === search
+    )
     setDisplayList(filteredList.slice(0, perPage))
     setFilteredList(filteredList)
   }, [search, tokenList])
@@ -102,7 +104,7 @@ const TokenSelectDialog = function TokenSelectDialog(props: Props) {
                         <Avatar size="sm" mr="5px" name={token.symbol} src={token.icon} />
                         {token.symbol}
                       </div>
-                      <div>{getTokenBalanceUiAmount(token.mint).text}</div>
+                      <div>{getTokenBalanceUiAmount({ mint: token.mint }).text}</div>
                     </ListItem>
                   ))}
                 </List>

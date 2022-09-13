@@ -1,37 +1,23 @@
-import {
-  Avatar,
-  CircularProgress,
-  Flex,
-  Box,
-  Text,
-  InputGroup,
-  InputRightElement,
-  NumberInput,
-  NumberInputField,
-  useDisclosure
-} from '@chakra-ui/react'
-import { SplToken, TokenJson } from '@raydium-io/raydium-sdk'
+import { ReactNode } from 'react'
+import { Flex, Box, Text, InputGroup, NumberInput, NumberInputField } from '@chakra-ui/react'
 import { useCallback, useEffect, useRef } from 'react'
-
-import TokenSelectDialog from './TokenSelectDialog'
 
 interface Props {
   id?: string
   name?: string
-  token?: SplToken | TokenJson
+  title?: ReactNode
   readonly?: boolean
   loading?: boolean
   value: string
   side?: string
   balance?: string
+  decimals?: number
   onChange?: (val: string, valNumber: number, side?: string) => void
-  onTokenChange?: (token: TokenJson, side?: string) => void
   onFocus?: (side?: string) => void
 }
 
-function TokenInput(props: Props) {
-  const { id, name, token, balance, onChange, onTokenChange, onFocus, side, readonly, value, loading } = props
-  const { isOpen, onOpen, onClose } = useDisclosure()
+function DecimalInput(props: Props) {
+  const { id, name, title, onChange, onFocus, decimals, side, readonly, value } = props
   const valRef = useRef(value)
   valRef.current = value
 
@@ -42,25 +28,17 @@ function TokenInput(props: Props) {
     [onChange, side]
   )
 
-  const handleSelectToken = useCallback(
-    (token: TokenJson) => {
-      onTokenChange?.(token, side)
-      onClose()
-    },
-    [onTokenChange, side, onClose]
-  )
-
   const handleParseVal = useCallback(
     (val: string) => {
       const splitArr = val.split('.')
       if (splitArr.length > 2) return [splitArr[0], splitArr[1]].join('.')
-      if (token && splitArr[1] && splitArr[1].length > token.decimals) {
+      if (typeof decimals === 'number' && decimals > -1 && splitArr[1] && splitArr[1].length > decimals) {
         //.replace(/([1-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, '$1')
-        return [splitArr[0], splitArr[1].substring(0, token.decimals)].join('.')
+        return [splitArr[0], splitArr[1].substring(0, decimals)].join('.')
       }
       return val
     },
-    [token]
+    [decimals]
   )
 
   const handleFocus = useCallback(() => {
@@ -74,16 +52,9 @@ function TokenInput(props: Props) {
 
   return (
     <Box width="fit-content">
-      {balance && (
-        <Flex justifyContent="flex-end">
-          {balance}
-          {token?.symbol}
-        </Flex>
-      )}
       <Flex alignItems="center" mb="10px">
-        <Avatar name={token?.name || '-'} src={token?.icon} bg="transparent" cursor="pointer" color="blackAlpha.100" onClick={onOpen} />
-        <Text mx="6px" minW="40px">
-          {token?.symbol}
+        <Text mr="8px" mt="6px" minW="40px">
+          {title}
         </Text>
         <InputGroup sx={{ width: 'fit-content', mr: '6px' }}>
           <NumberInput
@@ -97,12 +68,10 @@ function TokenInput(props: Props) {
           >
             <NumberInputField />
           </NumberInput>
-          {loading && <InputRightElement pointerEvents="none" children={<CircularProgress size="20px" isIndeterminate />} />}
         </InputGroup>
       </Flex>
-      {<TokenSelectDialog isOpen={isOpen} onClose={onClose} onSelectValue={handleSelectToken} />}
     </Box>
   )
 }
 
-export default TokenInput
+export default DecimalInput

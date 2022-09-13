@@ -11,10 +11,13 @@ import {
 
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'
+import { toastSubject } from '@/hooks/useGlobalToast'
+import { txStatusSubject } from '@/hooks/useTxStatus'
 
 interface LiquidityStore {
   poolList: LiquidityPoolJsonInfo[]
   poolMap: Map<string, LiquidityPoolJsonInfo>
+  lpTokenMap: Map<string, Token>
   currentSDKPoolInfo: SDKParsedLiquidityInfo | null
   loadingPoolInfo: boolean
   poolNotFound: boolean
@@ -34,7 +37,7 @@ interface LiquidityStore {
   }) => Promise<string>
   removeLiquidityAct: (params: {
     poolId: string
-    amount: TokenAmount
+    amount: string
     config?: {
       bypassAssociatedCheck?: boolean
     }
@@ -45,6 +48,7 @@ interface LiquidityStore {
 const initLiquiditySate = {
   poolList: [],
   poolMap: new Map(),
+  lpTokenMap: new Map(),
   currentSDKPoolInfo: null,
   computePairAmountAct: null,
   loadingPoolInfo: false,
@@ -59,6 +63,7 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       if (!raydium) return
       raydium.liquidity.load({ forceUpdate: !!forceUpdate }).then(() => {
         set({
+          lpTokenMap: raydium.liquidity.lpTokenMap,
           poolList: raydium.liquidity.allPools,
           poolMap: raydium.liquidity.allPoolMap
         })
@@ -108,23 +113,30 @@ export const useLiquidityStore = createStore<LiquidityStore>(
       const raydium = useAppStore.getState().raydium
       const { execute } = await raydium!.liquidity.addLiquidity(params)
       try {
-        return await execute()
-      } catch {
+        const txId = await execute()
+        txStatusSubject.next({ txId })
+        return txId
+      } catch (e: any) {
+        toastSubject.next({ txError: e })
         return ''
       }
     },
 
     removeLiquidityAct: async (params) => {
       const raydium = useAppStore.getState().raydium
+      if (!raydium) return ''
       const { poolId, amount, config } = params
-      const { execute } = await raydium!.liquidity.removeLiquidity({
+      const { execute } = await raydium.liquidity.removeLiquidity({
         poolId,
-        amountIn: amount,
+        amountIn: raydium.liquidity.lpMintToTokenAmount({ poolId, amount }),
         config
       })
       try {
-        return await execute()
-      } catch {
+        const txId = await execute()
+        txStatusSubject.next({ txId })
+        return txId
+      } catch (e: any) {
+        toastSubject.next({ txError: e })
         return ''
       }
     },

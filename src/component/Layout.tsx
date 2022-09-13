@@ -18,7 +18,7 @@ function Layout({ children }: { children: ReactNode }) {
           <Link href="pools">Pools</Link>
         </Text>
         <Text as="span" size="md" mx="4px">
-          <Link href="/">Farms</Link>
+          <Link href="/farm">Farms</Link>
         </Text>
       </div>
       {children}

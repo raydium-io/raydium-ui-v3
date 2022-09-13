@@ -1,17 +1,24 @@
-import { parseTokenAccountResp, TokenAccount, TokenAccountRaw, parseNumberInfo, Fraction, WSOLMint } from '@raydium-io/raydium-sdk'
+import { parseTokenAccountResp, TokenAccount, TokenAccountRaw, parseNumberInfo, BN_ZERO, WSOLMint } from '@raydium-io/raydium-sdk'
 import { Connection, PublicKey } from '@solana/web3.js'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import createStore from './createStore'
 import { useTokenStore } from './useTokenStore'
-import BN from 'bn.js'
+import { useLiquidityStore } from './useLiquidityStore'
+import Big from 'big.js'
 
-interface TokenAccountStore {
+export interface TokenAccountStore {
   tokenAccounts: TokenAccount[]
   tokenAccountRawInfos: TokenAccountRaw[]
   tokenAccountMap: Map<string, TokenAccount[]>
 
   fetchTokenAccountAct: (params: { connection: Connection; owner: PublicKey }) => Promise<void>
-  getTokenBalanceUiAmount: (mint: string, decimals?: number) => { amount: Fraction; text: string; gte: (val: string) => boolean }
+  getTokenBalanceUiAmount: (params: { mint: string; decimals?: number; isLpToken?: boolean }) => {
+    amount: Big
+    decimals: number
+    text: string
+    isZero: boolean
+    gt: (val: string) => boolean
+  }
 }
 
 const initTokenAccountSate = {
@@ -53,9 +60,9 @@ export const useTokenAccountStore = createStore<TokenAccountStore>(
       })
       useTokenStore.setState({ tokenList: JSON.parse(JSON.stringify(tokenList)) }, false, { type: 'fetchTokenAccountAct' })
     },
-    getTokenBalanceUiAmount: (mint, decimals) => {
-      const defaultVal = { amount: new Fraction(0, 1), text: '0', gte: () => false }
-      const tokenInfo = useTokenStore.getState().tokenMap.get(mint)
+    getTokenBalanceUiAmount: ({ mint, decimals, isLpToken }) => {
+      const defaultVal = { amount: new Big(0), text: '0', decimals: 0, isZero: true, gt: () => false }
+      const tokenInfo = isLpToken ? useLiquidityStore.getState().lpTokenMap.get(mint) : useTokenStore.getState().tokenMap.get(mint)
       const tokenDecimal = decimals || tokenInfo?.decimals || 0
       const tokenAccount = get().tokenAccountMap.get(mint)?.[0]
       if (!tokenAccount) return defaultVal
@@ -64,7 +71,7 @@ export const useTokenAccountStore = createStore<TokenAccountStore>(
       let amount = tokenAccount.amount
       // wsol might have lots of ata, so sum them up
       if (mint === WSOLMint.toBase58()) {
-        amount = new BN(0)
+        amount = BN_ZERO.clone()
         get()
           .tokenAccountMap.get(mint)!
           .forEach((acc) => {
@@ -73,13 +80,14 @@ export const useTokenAccountStore = createStore<TokenAccountStore>(
       }
 
       const numberDetails = parseNumberInfo(amount)
-      const f = new Fraction(numberDetails.numerator, numberDetails.denominator).div(new BN(10 ** tokenDecimal))
+      Big.DP = tokenDecimal
+      const balanceBig = new Big(numberDetails.numerator).div(new Big(numberDetails.denominator)).div(10 ** tokenDecimal)
       return {
-        amount: f,
-        text: f.toSignificant(tokenDecimal),
-        gte: (val: string) => {
-          return !!val && Number(f.toSignificant(tokenDecimal)) > Number(val)
-        }
+        amount: balanceBig,
+        decimals: tokenDecimal,
+        text: balanceBig.toString(),
+        isZero: balanceBig.eq(0),
+        gt: (val: string) => !!val && balanceBig.gt(val)
       }
     }
   }),

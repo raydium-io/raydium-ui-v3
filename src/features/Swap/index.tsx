@@ -83,8 +83,8 @@ function Swap() {
   }, [inputMint, outputMint, amountIn])
 
   const [balanceInput, balanceOutput] = [
-    inputMint ? getTokenBalanceUiAmount(inputMint).text : '',
-    outputMint ? getTokenBalanceUiAmount(outputMint).text : ''
+    inputMint ? getTokenBalanceUiAmount({ mint: inputMint }).text : '',
+    outputMint ? getTokenBalanceUiAmount({ mint: outputMint }).text : ''
   ]
 
   const ata = tokenAccountMap.get(inputMint)?.[0]

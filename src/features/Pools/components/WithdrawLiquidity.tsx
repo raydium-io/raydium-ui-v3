@@ -1,16 +1,8 @@
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  Button,
-  NumberInput
-} from '@chakra-ui/react'
+import { useCallback, useState } from 'react'
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, Link } from '@chakra-ui/react'
 import { ApiJsonPairInfo } from '@raydium-io/raydium-sdk'
-import { useAppStore, useLiquidityStore } from '@/store'
+import { useLiquidityStore } from '@/store'
+import DecimalInput from '@/component/DecimalInput'
 
 interface Props {
   pairInfo: ApiJsonPairInfo
@@ -19,14 +11,28 @@ interface Props {
 }
 
 function WithdrawLiquidity({ pairInfo, balance, onClose }: Props) {
-  const raydium = useAppStore((s) => s.raydium)
-  const removeLiquidityAct = useLiquidityStore((s) => s.removeLiquidityAct)
+  const [removeLiquidityAct, lpTokenMap] = useLiquidityStore((s) => [s.removeLiquidityAct, s.lpTokenMap])
+  const [loading, setLoading] = useState(false)
+  const [value, setValue] = useState('')
+
+  const handleChange = useCallback((val: string) => {
+    setValue(val)
+  }, [])
+
+  const handleClickMax = useCallback(() => {
+    setValue((val) => balance || val)
+  }, [balance])
+
   const handleConfirm = () => {
+    setLoading(true)
     removeLiquidityAct({
       poolId: pairInfo.ammId,
-      amount: raydium!.liquidity.lpMintToTokenAmount({ poolId: pairInfo.ammId, amount: balance })
+      amount: value
     })
-    onClose()
+      .then(() => {
+        onClose()
+      })
+      .finally(() => setLoading(false))
   }
 
   return (
@@ -38,13 +44,15 @@ function WithdrawLiquidity({ pairInfo, balance, onClose }: Props) {
         <ModalBody>
           Pool: {pairInfo.name}
           <br />
-          Balance: {balance}
-          <br />
-          <NumberInput />
+          Balance:{' '}
+          <Link onClick={handleClickMax} sx={{ '&:hover': { textDecoration: 'none' } }}>
+            {balance}
+          </Link>
+          <DecimalInput value={value} title={pairInfo.name} decimals={lpTokenMap.get(pairInfo.lpMint)?.decimals} onChange={handleChange} />
         </ModalBody>
 
         <ModalFooter>
-          <Button colorScheme="blue" mr={3} onClick={handleConfirm}>
+          <Button isLoading={loading} colorScheme="blue" mr={3} onClick={handleConfirm}>
             Remove Liquidity
           </Button>
           <Button variant="ghost" onClick={onClose}>

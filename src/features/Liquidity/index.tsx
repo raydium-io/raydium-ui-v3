@@ -8,6 +8,7 @@ import PairInfo from './components/PairInfo'
 import shallow from 'zustand/shallow'
 import { SIDE, getPairCache, setPairCache } from './util'
 import { Subject, debounceTime, switchMap, filter, tap } from 'rxjs'
+import Big from 'big.js'
 
 interface ComputeParam {
   fixedAmount: TokenAmount
@@ -41,9 +42,9 @@ function Liquidity() {
   const [maxAnother, setMaxAnother] = useState<TokenAmount>()
 
   const [tokenBase, tokenQuote] = [tokenMap.get(baseMint), tokenMap.get(quoteMint)]
-  const [baseBalance, quoteBalance] = [getTokenBalanceUiAmount(baseMint), getTokenBalanceUiAmount(quoteMint)]
+  const [baseBalance, quoteBalance] = [getTokenBalanceUiAmount({ mint: baseMint }), getTokenBalanceUiAmount({ mint: quoteMint })]
   const btnDisabled =
-    poolNotFound || !currentSDKPoolInfo || !baseMint || !baseAmount || !baseBalance.gte(baseAmount) || !quoteBalance.gte(quoteAmount)
+    poolNotFound || !currentSDKPoolInfo || !baseMint || !baseAmount || !baseBalance.gt(baseAmount) || !quoteBalance.gt(quoteAmount)
 
   useEffect(() => {
     const { baseMint, quoteMint } = router.query as { baseMint: string; quoteMint: string }
@@ -181,7 +182,8 @@ function Liquidity() {
           onFocus={handleFocus}
         />
         <div>
-          lp token balance: {getTokenBalanceUiAmount(currentSDKPoolInfo?.lpMint.toBase58() || '', currentSDKPoolInfo?.lpDecimals).text}
+          lp token balance:{' '}
+          {getTokenBalanceUiAmount({ mint: currentSDKPoolInfo?.lpMint.toBase58() || '', decimals: currentSDKPoolInfo?.lpDecimals }).text}
         </div>
         Max another: {maxAnother?.toExact()} {maxAnother?.token.mint.equals(WSOLMint) ? 'SOL' : maxAnother?.token.symbol}
         <br />

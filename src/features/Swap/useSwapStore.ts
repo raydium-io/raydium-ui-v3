@@ -1,6 +1,8 @@
 import { Percent, GetAmountOutReturn, WSOLMint, SOLMint } from '@raydium-io/raydium-sdk'
 import { createStore, useAppStore } from '@/store'
 import { isSolWSol, isSol, isWSol } from './util'
+import { toastSubject } from '@/hooks/useGlobalToast'
+import { txStatusSubject } from '@/hooks/useTxStatus'
 
 interface SwapStore {
   slippage: number
@@ -55,7 +57,9 @@ export const useSwapStore = createStore<SwapStore>(
       }
 
       const { routedPools } = await raydium.trade.getAvailablePools(params)
+
       if (amount === '') {
+        raydium.liquidity.sdkParseJsonLiquidityInfo(routedPools)
         set(() => ({ computing: false, computedSwapResult: null }), false, action)
         return
       }
@@ -93,8 +97,11 @@ export const useSwapStore = createStore<SwapStore>(
       })
 
       try {
-        return await execute()
-      } catch {
+        const txIds = await execute()
+        txStatusSubject.next({ txId: txIds.pop()! })
+        return txIds
+      } catch (e: any) {
+        toastSubject.next({ txError: e })
         return
       }
     },
@@ -104,8 +111,11 @@ export const useSwapStore = createStore<SwapStore>(
       if (!raydium) return
       const { execute } = await raydium.trade.unWrapWSol(raydium.decimalAmount({ mint: WSOLMint, amount })!)
       try {
-        return await execute()
-      } catch {
+        const txId = await execute()
+        txStatusSubject.next({ txId })
+        return txId
+      } catch (e: any) {
+        toastSubject.next({ txError: e })
         return
       }
     },

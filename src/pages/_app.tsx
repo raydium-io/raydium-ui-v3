@@ -7,6 +7,8 @@ import LRU from 'lru-cache'
 import { WalletProvider, ThemeProvider } from '../provider'
 import useInitConnection from '../hooks/useInitConnection'
 import useTokenAccountInfo from '../hooks/useTokenAccountInfo'
+import useGlobalToast from '../hooks/useGlobalToast'
+import useTxStatus from '../hooks/useTxStatus'
 import Layout from '@/component/Layout'
 
 // Use require instead of import since order matters
@@ -15,8 +17,10 @@ require('@solana/wallet-adapter-react-ui/styles.css')
 type SSRData = Omit<RaydiumApiBatchRequestParams, 'api'>
 
 const Content = memo(function Content({ children, ...props }: PropsWithChildren<SSRData>) {
+  useGlobalToast()
   useInitConnection(props)
   useTokenAccountInfo()
+  useTxStatus()
   return <>{children}</>
 })
 

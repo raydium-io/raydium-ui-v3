@@ -3,19 +3,7 @@ import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { useAppStore } from '@/store/useAppStore'
 import shallow from 'zustand/shallow'
 import { RaydiumApiBatchRequestParams } from '@raydium-io/raydium-sdk'
-import { useToast, ToastPosition, Box } from '@chakra-ui/react'
-
-const toastConfig = {
-  duration: 50000,
-  isClosable: true,
-  position: 'bottom-right' as ToastPosition,
-  containerStyle: {
-    maxWidth: '300px',
-    '& .chakra-alert__desc': {
-      wordBreak: 'break-word'
-    }
-  }
-}
+import { toastSubject } from './useGlobalToast'
 
 function useInitConnection(props: Omit<RaydiumApiBatchRequestParams, 'api'>) {
   const { connection } = useConnection()
@@ -27,31 +15,29 @@ function useInitConnection(props: Omit<RaydiumApiBatchRequestParams, 'api'>) {
     }),
     shallow
   )
-  const toast = useToast()
   const walletRef = useRef(wallet)
 
   useEffect(() => {
     if (wallet && publicKey) {
-      toast({
+      toastSubject.next({
         title: `${wallet.adapter.name} wallet connected`,
         description: `Wallet ${publicKey}`,
-        status: 'success',
-        ...toastConfig
+        status: 'success'
       })
       walletRef.current = wallet
       return
     }
     if (walletRef.current) {
-      toast({
+      toastSubject.next({
         title: `${walletRef.current.adapter.name} wallet disconnected`,
-        status: 'warning',
-        ...toastConfig
+        status: 'warning'
       })
       walletRef.current = wallet
     }
-  }, [wallet, toast, publicKey])
+  }, [wallet, publicKey])
 
   useEffect(() => {
+    useAppStore.setState({ connection }, false, 'useInitConnection')
     // raydium sdk initialization can be done with connection only
     if (connection) {
       initRaydiumAct({ owner: publicKey || undefined, connection, signAllTransactions, ...props })
@@ -63,7 +49,7 @@ function useInitConnection(props: Omit<RaydiumApiBatchRequestParams, 'api'>) {
     if (raydium) {
       raydium.setOwner(publicKey || undefined)
       raydium.setSignAllTransactions(signAllTransactions)
-      useAppStore.setState({ connected: !!publicKey }, false, 'useInitConnection')
+      useAppStore.setState({ connected: !!publicKey, publicKey: publicKey || undefined }, false, 'useInitConnection')
     }
   }, [raydium, publicKey, signAllTransactions])
 }
