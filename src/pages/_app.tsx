@@ -1,22 +1,26 @@
-import type { FC, PropsWithChildren } from 'react'
+import type { PropsWithChildren } from 'react'
 import { memo } from 'react'
 import type { AppProps, AppContext } from 'next/app'
 import App from 'next/app'
-
-import { WalletProvider, ThemeProvider } from '../provider'
-import useInitConnection from '../hooks/useInitConnection'
-
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { Api, RaydiumApiBatchRequestParams } from '@raydium-io/raydium-sdk'
 import LRU from 'lru-cache'
+import { WalletProvider, ThemeProvider } from '../provider'
+import useInitConnection from '../hooks/useInitConnection'
+import useTokenAccountInfo from '../hooks/useTokenAccountInfo'
+import useGlobalToast from '../hooks/useGlobalToast'
+import useTxStatus from '../hooks/useTxStatus'
+import Layout from '@/component/Layout'
 
 // Use require instead of import since order matters
 require('@solana/wallet-adapter-react-ui/styles.css')
 
 type SSRData = Omit<RaydiumApiBatchRequestParams, 'api'>
 
-const Content: FC<PropsWithChildren<SSRData>> = memo(({ children, ...props }) => {
+const Content = memo(function Content({ children, ...props }: PropsWithChildren<SSRData>) {
+  useGlobalToast()
   useInitConnection(props)
+  useTokenAccountInfo()
+  useTxStatus()
   return <>{children}</>
 })
 
@@ -24,10 +28,11 @@ const MyApp = ({ Component, pageProps, defaultApiTokens, defaultApiLiquidityPool
   return (
     <WalletProvider>
       <ThemeProvider>
-        <Content defaultApiTokens={defaultApiTokens} defaultApiLiquidityPools={defaultApiLiquidityPools}>
-          <WalletMultiButton />
-          <Component {...pageProps} />
-        </Content>
+        <Layout>
+          <Content defaultApiTokens={defaultApiTokens} defaultApiLiquidityPools={defaultApiLiquidityPools}>
+            <Component {...pageProps} />
+          </Content>
+        </Layout>
       </ThemeProvider>
     </WalletProvider>
   )

@@ -1,3 +1,4 @@
+import { Connection, PublicKey } from '@solana/web3.js'
 import { Raydium, RaydiumLoadParams } from '@raydium-io/raydium-sdk'
 import createStore from './createStore'
 import { useTokenStore } from './useTokenStore'
@@ -5,6 +6,8 @@ import { useLiquidityStore } from './useLiquidityStore'
 
 interface AppState {
   raydium?: Raydium
+  connection?: Connection
+  publicKey?: PublicKey
   initialing: boolean
   connected: boolean
   initRaydiumAct: (payload: RaydiumLoadParams) => Promise<void>
@@ -25,6 +28,7 @@ export const useAppStore = createStore<AppState>(
 
       set({ initialing: true }, false, actionLog)
       const raydium = await Raydium.load(payload)
+      ;(window as any).raydium = raydium
       set({ raydium, initialing: false, connected: !!payload.owner }, false, actionLog)
 
       useTokenStore.setState(

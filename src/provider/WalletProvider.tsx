@@ -30,7 +30,7 @@ const App: FC<PropsWithChildren<{}>> = ({ children }) => {
       new TorusWalletAdapter(),
       new TrustWalletAdapter()
     ],
-    []
+    [network]
   )
 
   return (

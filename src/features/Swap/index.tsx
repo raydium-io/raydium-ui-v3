@@ -1,89 +1,121 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useTokenStore } from '@/store/useTokenStore'
-import { useSwapStore, ComputeParams } from './useSwapStore'
-
+import { Button } from '@chakra-ui/react'
+import { useRouter } from 'next/router'
 import { TokenJson } from '@raydium-io/raydium-sdk'
-import TokenInput from './components/TokenInput'
-import TokenSelectDialog, { TokenSelectRef } from './components/TokenSelectDialog'
-import ExchangeRate from './components/ExchangeRate'
-import { PublicKey } from '@solana/web3.js'
 import shallow from 'zustand/shallow'
-import { debounce } from 'lodash'
+
+import { useTokenStore, useTokenAccountStore } from '@/store'
+import { useSwapStore, ComputeParams } from './useSwapStore'
+import TokenInput from '@/component/TokenInput'
+import ExchangeRate from '@/component/ExchangeRate'
+import { debounceTime, Subject, switchMap, fromEvent, exhaustMap } from 'rxjs'
+import { getSwapPairCache, setSwapPairCache } from './util'
+
+const computeSubject = new Subject<ComputeParams>()
 
 function Swap() {
-  const { tokenList, tokenMap } = useTokenStore(
-    (s) => ({
-      tokenList: s.tokenList,
-      tokenMap: s.tokenMap
-    }),
-    shallow
-  )
-  const { computedSwapResult, computeSwapAmountAct, computing } = useSwapStore()
+  const router = useRouter()
+  const tokenMap = useTokenStore((s) => s.tokenMap)
+  const [getTokenBalanceUiAmount, tokenAccountMap] = useTokenAccountStore((s) => [s.getTokenBalanceUiAmount, s.tokenAccountMap], shallow)
+  const { computedSwapResult, computeSwapAmountAct, swapTokenAct, computing } = useSwapStore()
 
-  const tokenSelectorRef = useRef<TokenSelectRef>(null)
-  const tokenSelectSideRef = useRef<string>('')
-  const [mintInput, setMintInput] = useState<string>('4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R')
-  const [mintOutput, setMintOutput] = useState<string>(PublicKey.default.toBase58())
+  const [inputMint, setInputMint] = useState<string>('')
+  const [outputMint, setOutputMint] = useState<string>('')
   const [amountIn, setAmountIn] = useState<string>('')
+  const submitBtnRef = useRef<HTMLButtonElement>(null)
 
-  const [tokenInput, tokenOutput] = [tokenMap.get(mintInput), tokenMap.get(mintOutput)]
+  const [tokenInput, tokenOutput] = [tokenMap.get(inputMint), tokenMap.get(outputMint)]
 
-  const handleCompute = useCallback(
-    debounce((params: ComputeParams) => {
-      computeSwapAmountAct(params)
-    }, 200),
-    [computeSwapAmountAct]
-  )
+  useEffect(() => {
+    const { inputMint, outputMint } = router.query as { inputMint: string; outputMint: string }
+    const cache = getSwapPairCache()
+    const [defaultInput, defaultOutput] = [inputMint || cache.inputMint, outputMint || cache.outputMint]
+    if (tokenMap.get(defaultInput)) setInputMint(defaultInput)
+    if (tokenMap.get(defaultOutput)) setOutputMint(defaultOutput)
+  }, [router.query, tokenMap])
+
+  useEffect(() => {
+    const sub = computeSubject
+      .asObservable()
+      .pipe(
+        debounceTime(200),
+        switchMap((params) => computeSwapAmountAct(params))
+      )
+      .subscribe()
+    return () => sub.unsubscribe()
+  }, [computeSwapAmountAct])
 
   const handleInputChange = useCallback((val: string) => {
     setAmountIn(val)
   }, [])
 
-  const handleClickTokenIcon = useCallback((side?: 'input' | 'output') => {
-    tokenSelectSideRef.current = side || ''
-    tokenSelectorRef.current?.open()
-  }, [])
-
-  const handleSelectToken = useCallback((token: TokenJson) => {
-    const setFn = tokenSelectSideRef.current === 'input' ? setMintInput : setMintOutput
-    setFn(token.mint)
-    tokenSelectorRef.current?.close()
+  const handleSelectToken = useCallback((token: TokenJson, side?: string) => {
+    if (side === 'input') {
+      setInputMint(token.mint)
+      setOutputMint((mint) => (token.mint === mint ? '' : mint))
+      return
+    }
+    setOutputMint(token.mint)
+    setInputMint((mint) => (token.mint === mint ? '' : mint))
   }, [])
 
   useEffect(() => {
-    if (!mintInput || !mintOutput) return
-    handleCompute({
-      inputMint: mintInput,
-      outputMint: mintOutput,
+    const sub = fromEvent(submitBtnRef.current!, 'click')
+      .pipe(exhaustMap(() => swapTokenAct({ inputMint, amount: amountIn })))
+      .subscribe((txIds) => console.log('tx done', txIds))
+    return () => sub.unsubscribe()
+  }, [swapTokenAct, inputMint, amountIn])
+
+  const handleChangeSide = useCallback(() => {
+    setInputMint(outputMint)
+    setAmountIn(computedSwapResult?.amountOut.toExact() || '')
+    setOutputMint(inputMint)
+  }, [inputMint, outputMint, computedSwapResult])
+
+  useEffect(() => {
+    if (!inputMint || !outputMint) return
+    setSwapPairCache({ inputMint, outputMint })
+    computeSubject.next({
+      inputMint,
+      outputMint,
       amount: amountIn
     })
-  }, [mintInput, mintOutput, amountIn])
+  }, [inputMint, outputMint, amountIn])
+
+  const [balanceInput, balanceOutput] = [
+    inputMint ? getTokenBalanceUiAmount({ mint: inputMint }).text : '',
+    outputMint ? getTokenBalanceUiAmount({ mint: outputMint }).text : ''
+  ]
+
+  const ata = tokenAccountMap.get(inputMint)?.[0]
+  const isButtonDisabled = !ata || ata.amount.toNumber() < Number(amountIn) || ata.amount.isZero() || !Number(amountIn) || computing
 
   return (
     <>
       Swap
       <div>
-        <TokenInput side="input" token={tokenInput} onClickIcon={handleClickTokenIcon} value={amountIn} onChange={handleInputChange} />
+        <TokenInput side="input" token={tokenInput} value={amountIn} onChange={handleInputChange} onTokenChange={handleSelectToken} />
+        {balanceInput} {tokenInput?.symbol}
+        <Button display="block" my="10px" onClick={handleChangeSide}>
+          ^
+        </Button>
         <TokenInput
           side="output"
           token={tokenOutput}
-          onClickIcon={handleClickTokenIcon}
           value={computedSwapResult?.amountOut.toExact() || ''}
+          onTokenChange={handleSelectToken}
           readonly={true}
-          loading={computing}
         />
-
-        {computedSwapResult && <>min received {computedSwapResult?.minAmountOut.toExact()}</>}
-        {computedSwapResult?.executionPrice && (
+        <div>
+          {balanceOutput} {tokenOutput?.symbol}
+        </div>
+        {computedSwapResult && <div>min received {computedSwapResult?.minAmountOut.toExact()}</div>}
+        {computedSwapResult?.executionPrice && tokenInput && tokenOutput && (
           <ExchangeRate tokenInput={tokenInput!} tokenOutput={tokenOutput!} executionPrice={computedSwapResult?.executionPrice} />
         )}
-
-        <TokenSelectDialog
-          ref={tokenSelectorRef}
-          tokenList={tokenList}
-          selectedValue={new Set([mintInput, mintOutput])}
-          onSelectValue={handleSelectToken}
-        />
+        <Button disabled={isButtonDisabled} ref={submitBtnRef} isLoading={computing} loadingText="Loading pool..">
+          Swap
+        </Button>
       </div>
     </>
   )
