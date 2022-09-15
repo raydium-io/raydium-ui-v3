@@ -28,7 +28,7 @@ interface LiquidityStore {
     poolId: PublicKeyish
     fixedAmount: TokenAmount
     anotherToken: Token
-  }) => Promise<{ anotherAmount: TokenAmount; maxAnotherAmount: TokenAmount }>
+  }) => Promise<{ anotherAmount: TokenAmount; maxAnotherAmount: TokenAmount } | undefined>
   addLiquidityAct: (params: {
     poolId: PublicKeyish
     amountInA: TokenAmount
@@ -50,7 +50,6 @@ const initLiquiditySate = {
   poolMap: new Map(),
   lpTokenMap: new Map(),
   currentSDKPoolInfo: null,
-  computePairAmountAct: null,
   loadingPoolInfo: false,
   poolNotFound: false
 }
@@ -97,11 +96,11 @@ export const useLiquidityStore = createStore<LiquidityStore>(
         set({ currentSDKPoolInfo: data[0], loadingPoolInfo: false, poolNotFound: false }, false, action)
       })
     },
-    computePairAmountAct: (params) => {
+    computePairAmountAct: async (params) => {
       const raydium = useAppStore.getState().raydium
-
+      if (!raydium) return
       const { poolId, fixedAmount, anotherToken } = params
-      return raydium!.liquidity.computePairAmount({
+      return raydium.liquidity.computePairAmount({
         poolId,
         amount: fixedAmount,
         anotherToken,
@@ -111,7 +110,8 @@ export const useLiquidityStore = createStore<LiquidityStore>(
 
     addLiquidityAct: async (params) => {
       const raydium = useAppStore.getState().raydium
-      const { execute } = await raydium!.liquidity.addLiquidity(params)
+      if (!raydium) return ''
+      const { execute } = await raydium.liquidity.addLiquidity(params)
       try {
         const txId = await execute()
         txStatusSubject.next({ txId })

@@ -3,13 +3,13 @@ import { memo } from 'react'
 import type { AppProps, AppContext } from 'next/app'
 import App from 'next/app'
 import { Api, RaydiumApiBatchRequestParams } from '@raydium-io/raydium-sdk'
-import LRU from 'lru-cache'
 import { WalletProvider, ThemeProvider } from '../provider'
 import useInitConnection from '../hooks/useInitConnection'
 import useTokenAccountInfo from '../hooks/useTokenAccountInfo'
 import useGlobalToast from '../hooks/useGlobalToast'
 import useTxStatus from '../hooks/useTxStatus'
 import Layout from '@/component/Layout'
+import { apiSsrCache } from '../util/ssrCache'
 
 // Use require instead of import since order matters
 require('@solana/wallet-adapter-react-ui/styles.css')
@@ -24,12 +24,12 @@ const Content = memo(function Content({ children, ...props }: PropsWithChildren<
   return <>{children}</>
 })
 
-const MyApp = ({ Component, pageProps, defaultApiTokens, defaultApiLiquidityPools }: AppProps & SSRData) => {
+const MyApp = ({ Component, pageProps, ...props }: AppProps & SSRData) => {
   return (
     <WalletProvider>
       <ThemeProvider>
         <Layout>
-          <Content defaultApiTokens={defaultApiTokens} defaultApiLiquidityPools={defaultApiLiquidityPools}>
+          <Content {...props}>
             <Component {...pageProps} />
           </Content>
         </Layout>
@@ -38,28 +38,38 @@ const MyApp = ({ Component, pageProps, defaultApiTokens, defaultApiLiquidityPool
   )
 }
 
-const ssrCache = new LRU({
-  max: 500,
-  ttl: 1000 * 60 * 10 // 5 mins
-})
-
 MyApp.getInitialProps = async (appContext: AppContext) => {
   try {
     const ctx = await App.getInitialProps(appContext)
     const api = new Api({ cluster: 'mainnet', timeout: 10 * 1000 })
 
-    let [defaultApiTokens, defaultApiLiquidityPools] = [ssrCache.get('defaultApiTokens'), ssrCache.get('defaultApiLiquidityPools')]
-    if (!defaultApiTokens) {
-      defaultApiTokens = await api.getTokens()
-      ssrCache.set('defaultApiTokens', defaultApiTokens)
+    const ssrRequest = [
+      {
+        name: 'defaultApiTokens',
+        api: async () => await api.getTokens()
+      },
+      {
+        name: 'defaultApiLiquidityPools',
+        api: async () => await api.getLiquidityPools()
+      },
+      {
+        name: 'defaultApiPairsInfo',
+        api: async () => await api.getPairsInfo()
+      },
+      {
+        name: 'defaultRaydiumTokenPrice',
+        api: async () => await api.getRaydiumTokenPrice(),
+        config: { ttl: 1000 * 60 }
+      }
+    ]
+    const preloadData: Record<string, any> = {}
+    for (let i = 0; i < ssrRequest.length; i++) {
+      const config = ssrRequest[i]
+      preloadData[config.name] = apiSsrCache.get(config.name) || (await config.api())
+      apiSsrCache.set(config.name, preloadData[config.name])
     }
 
-    if (!defaultApiLiquidityPools) {
-      defaultApiLiquidityPools = await api.getLiquidityPools()
-      ssrCache.set('defaultApiLiquidityPools', defaultApiLiquidityPools)
-    }
-
-    return { ...ctx, defaultApiTokens, defaultApiLiquidityPools }
+    return { ...ctx, ...preloadData }
   } catch {
     return { defaultApiTokens: [], defaultApiLiquidityPools: [] }
   }

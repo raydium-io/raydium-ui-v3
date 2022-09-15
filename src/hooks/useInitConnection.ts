@@ -40,7 +40,7 @@ function useInitConnection(props: Omit<RaydiumApiBatchRequestParams, 'api'>) {
     useAppStore.setState({ connection }, false, 'useInitConnection')
     // raydium sdk initialization can be done with connection only
     if (connection) {
-      initRaydiumAct({ owner: publicKey || undefined, connection, signAllTransactions, ...props })
+      initRaydiumAct({ connection, ...props })
     }
   }, [initRaydiumAct, connection])
 

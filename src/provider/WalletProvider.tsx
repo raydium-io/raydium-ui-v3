@@ -1,5 +1,5 @@
 import type { FC, PropsWithChildren } from 'react'
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
@@ -14,12 +14,12 @@ import {
 } from '@solana/wallet-adapter-wallets'
 import { clusterApiUrl } from '@solana/web3.js'
 
-const App: FC<PropsWithChildren<{}>> = ({ children }) => {
-  // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
-  const network = WalletAdapterNetwork.Mainnet
+export const defaultNetWork = WalletAdapterNetwork.Mainnet // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
+export const defaultEndpoint = clusterApiUrl(defaultNetWork) // You can also provide a custom RPC endpoint
 
-  // You can also provide a custom RPC endpoint
-  const endpoint = useMemo(() => clusterApiUrl(network), [network])
+const App: FC<PropsWithChildren<{}>> = ({ children }) => {
+  const [network] = useState<WalletAdapterNetwork>(defaultNetWork)
+  const [endpoint] = useState<string>(defaultEndpoint)
 
   const wallets = useMemo(
     () => [
