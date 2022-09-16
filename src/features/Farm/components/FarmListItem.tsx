@@ -70,9 +70,9 @@ export default function FarmListItem({ farmPool, tokenMap }: Props) {
         </Hide>
         <Box sx={colStyle}>{farmPool.totalApr30d?.mul(100).toFixed(2)}%</Box>
         <Box sx={colStyle}>
-          ~${farmPool.tvl ? Number(farmPool.tvl?.toFixed(0)).toLocaleString() : '0'}
+          ~${farmPool.tvl ? farmPool.tvl?.toFixed(0, { groupSeparator: ',' }) : '0'}
           <br />
-          {Number(farmPool.stakedLpAmount?.toFixed(0)).toLocaleString()} LP
+          {farmPool.stakedLpAmount?.toFixed(0, { groupSeparator: ',' })} LP
         </Box>
         <Hide below="md">
           <Box sx={colStyle}>

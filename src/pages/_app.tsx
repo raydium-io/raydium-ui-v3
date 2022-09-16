@@ -70,8 +70,8 @@ MyApp.getInitialProps = async (appContext: AppContext) => {
     }
 
     return { ...ctx, ...preloadData }
-  } catch {
-    return { defaultApiTokens: [], defaultApiLiquidityPools: [] }
+  } catch (err) {
+    return {}
   }
 }
 
