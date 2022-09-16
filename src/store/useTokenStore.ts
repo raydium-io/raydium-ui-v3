@@ -2,7 +2,7 @@ import { TokenJson, SplToken } from '@raydium-io/raydium-sdk'
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'
 
-interface TokenStore {
+export interface TokenStore {
   tokenList: TokenJson[]
   tokenMap: Map<string, SplToken>
   tokenMintList: { official: string[]; unOfficial: string[] }

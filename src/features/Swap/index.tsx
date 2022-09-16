@@ -62,7 +62,7 @@ function Swap() {
   useEffect(() => {
     const sub = fromEvent(submitBtnRef.current!, 'click')
       .pipe(exhaustMap(() => swapTokenAct({ inputMint, amount: amountIn })))
-      .subscribe((txIds) => console.log('tx done', txIds))
+      .subscribe()
     return () => sub.unsubscribe()
   }, [swapTokenAct, inputMint, amountIn])
 

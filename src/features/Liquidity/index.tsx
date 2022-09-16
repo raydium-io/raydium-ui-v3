@@ -69,7 +69,9 @@ function Liquidity() {
           })
         )
       )
-      .subscribe(({ anotherAmount, maxAnotherAmount }) => {
+      .subscribe((res) => {
+        if (!res) return
+        const { anotherAmount, maxAnotherAmount } = res
         const setFn = inputBaseSideRef.current ? setQuoteAmount : setBaseAmount
         setFn(anotherAmount.toExact())
         setMaxAnother(maxAnotherAmount)
@@ -92,9 +94,10 @@ function Liquidity() {
   useEffect(() => {
     /** compute after change pairs */
     currentSDKPoolInfo &&
+      raydium &&
       computeSubject.next({
-        fixedAmount: raydium!.mintToTokenAmount({ mint: baseDataRef.current.baseMint, amount: baseDataRef.current.baseVal }),
-        anotherToken: raydium!.mintToToken(baseDataRef.current.anotherMint)
+        fixedAmount: raydium.mintToTokenAmount({ mint: baseDataRef.current.baseMint, amount: baseDataRef.current.baseVal }),
+        anotherToken: raydium.mintToToken(baseDataRef.current.anotherMint)
       })
   }, [currentSDKPoolInfo, raydium])
 
@@ -113,10 +116,14 @@ function Liquidity() {
         anotherMint: inputBaseSideRef.current ? quoteMint : baseMint
       }
       setFn(val)
-      const [fixedAmount, anotherToken] = inputBaseSideRef.current
-        ? [raydium!.mintToTokenAmount({ mint: baseMint, amount: val }), raydium!.mintToToken(quoteMint)]
-        : [raydium!.mintToTokenAmount({ mint: quoteMint, amount: val }), raydium!.mintToToken(baseMint)]
-      computeSubject.next({ fixedAmount, anotherToken })
+
+      if (raydium) {
+        const [fixedAmount, anotherToken] = inputBaseSideRef.current
+          ? [raydium.mintToTokenAmount({ mint: baseMint, amount: val }), raydium.mintToToken(quoteMint)]
+          : [raydium.mintToTokenAmount({ mint: quoteMint, amount: val }), raydium.mintToToken(baseMint)]
+        computeSubject.next({ fixedAmount, anotherToken })
+      }
+
       if (val === '') {
         inputBaseSideRef.current ? setQuoteAmount('') : setBaseAmount('')
         setMaxAnother(undefined)

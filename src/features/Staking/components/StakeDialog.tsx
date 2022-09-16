@@ -3,22 +3,20 @@ import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, Modal
 import { HydratedFarmInfo } from '@raydium-io/raydium-sdk'
 import { FarmStore, TokenAccountStore } from '@/store'
 import DecimalInput from '@/component/DecimalInput'
-import { transformWSolName } from '../util'
 
 interface Props {
-  isDeposit: boolean
+  isStake: boolean
   farmInfo: HydratedFarmInfo
   onClose: () => void
   confirmAct: FarmStore['depositFarmAct'] | FarmStore['withdrawFarmAct']
   getTokenBalanceUiAmount: TokenAccountStore['getTokenBalanceUiAmount']
 }
 
-function DWFarmDialog({ isDeposit, farmInfo, getTokenBalanceUiAmount, confirmAct, onClose }: Props) {
+function StakeDialog({ isStake, farmInfo, getTokenBalanceUiAmount, confirmAct, onClose }: Props) {
   const [loading, setLoading] = useState(false)
   const [value, setValue] = useState('')
-  const depositedBalance = getTokenBalanceUiAmount({ mint: farmInfo.lpMint.toBase58(), isLpToken: true })
-  const balance = isDeposit ? depositedBalance.text : farmInfo.userStakedLpAmount?.toFixed()
-
+  const depositedBalance = getTokenBalanceUiAmount({ mint: farmInfo.lpMint.toBase58() })
+  const balance = isStake ? depositedBalance.text : farmInfo.userStakedLpAmount?.toExact()
   const handleChange = useCallback((val: string) => {
     setValue(val)
   }, [])
@@ -32,7 +30,8 @@ function DWFarmDialog({ isDeposit, farmInfo, getTokenBalanceUiAmount, confirmAct
     confirmAct({
       farmId: farmInfo.id,
       lpMint: farmInfo.lpMint,
-      amount: value
+      amount: value,
+      isStaking: true
     })
       .then(() => {
         onClose()
@@ -46,25 +45,27 @@ function DWFarmDialog({ isDeposit, farmInfo, getTokenBalanceUiAmount, confirmAct
     <Modal isOpen={true} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{isDeposit ? 'Stake' : 'UnStake'} LP</ModalHeader>
+        <ModalHeader>
+          {isStake ? 'Stake' : 'UnStake'} {farmInfo.name}
+        </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          {isDeposit ? 'Balance' : 'Deposited'}:{' '}
+          {isStake ? 'Balance' : 'Deposited'}:{' '}
           <Link onClick={handleClickMax} sx={{ '&:hover': { textDecoration: 'none' } }}>
             {Number(balance)}
           </Link>
           <br />
           <DecimalInput
             value={value}
-            title={transformWSolName(farmInfo.name)}
-            decimals={isDeposit ? depositedBalance.decimals : farmInfo.userStakedLpAmount?.token.decimals}
+            title={farmInfo.name}
+            decimals={isStake ? depositedBalance.decimals : farmInfo.userStakedLpAmount?.token.decimals}
             onChange={handleChange}
           />
         </ModalBody>
 
         <ModalFooter>
           <Button colorScheme="blue" mr={3} isLoading={loading} onClick={handleConfirm}>
-            {isDeposit ? 'Stake' : 'UnStake'} LP
+            {isStake ? 'Stake' : 'UnStake'}
           </Button>
           <Button variant="ghost" onClick={onClose}>
             Cancel
@@ -75,4 +76,4 @@ function DWFarmDialog({ isDeposit, farmInfo, getTokenBalanceUiAmount, confirmAct
   )
 }
 
-export default DWFarmDialog
+export default StakeDialog

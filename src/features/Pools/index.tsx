@@ -6,7 +6,7 @@ import { usePoolStore } from './usePoolStore'
 import { formatLocaleStr } from '@/util/number'
 import { useTokenStore, useLiquidityStore, useTokenAccountStore, useAppStore } from '@/store'
 
-import { Avatar, Flex, Box, Button, Switch, useDisclosure } from '@chakra-ui/react'
+import { Avatar, Flex, Box, Button, Switch, useDisclosure, Hide } from '@chakra-ui/react'
 import useSort from '@/hooks/useSort'
 import ConnectedOnly from '@/component/ConnectedOnly'
 import WithdrawLiquidity from './components/WithdrawLiquidity'
@@ -77,18 +77,20 @@ function Pools() {
         <Box sx={colStyle} cursor="pointer" onClick={handleClickSort} data-sort="liquidity">
           Liquidity
         </Box>
-        <Box sx={colStyle} cursor="pointer" onClick={handleClickSort} data-sort="volume7d">
-          Volume 7D
-        </Box>
-        <Box sx={colStyle} cursor="pointer" onClick={handleClickSort} data-sort="fee7d">
-          Fees 7D
-        </Box>
+        <Hide below="sm">
+          <Box sx={colStyle} cursor="pointer" onClick={handleClickSort} data-sort="volume7d">
+            Volume 7D
+          </Box>
+          <Box sx={colStyle} cursor="pointer" onClick={handleClickSort} data-sort="fee7d">
+            Fees 7D
+          </Box>
+        </Hide>
         <Box sx={colStyle} cursor="pointer" onClick={handleClickSort} data-sort="apr7d">
           APR 7D
         </Box>
         <Box sx={colStyle} />
       </Flex>
-      <Box id="poolCtr" height={['70vh', '300px']} overflowY="auto">
+      <Box id="poolCtr" height={['70vh', '500px']} overflowY="auto">
         {pairInfoList.length ? (
           <InfiniteScroll
             scrollableTarget="poolCtr"
@@ -112,8 +114,10 @@ function Pools() {
                     </Flex>
                   </Box>
                   <Box sx={colStyle}>${formatLocaleStr(pair.liquidity)}</Box>
-                  <Box sx={colStyle}>${formatLocaleStr(pair.volume7d)}</Box>
-                  <Box sx={colStyle}>${formatLocaleStr(pair.fee7d)}</Box>
+                  <Hide below="sm">
+                    <Box sx={colStyle}>${formatLocaleStr(pair.volume7d)}</Box>
+                    <Box sx={colStyle}>${formatLocaleStr(pair.fee7d)}</Box>
+                  </Hide>
                   <Box sx={colStyle}>{pair.apr7d}</Box>
                   <Box sx={colStyle}>
                     <ConnectedOnly>

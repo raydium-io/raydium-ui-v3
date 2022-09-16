@@ -39,9 +39,13 @@ const TokenSelectDialog = function TokenSelectDialog(props: Props) {
   }, [tokenList])
 
   useEffect(() => {
-    const filteredList = tokenList.filter(
-      (token) => token.symbol.toLocaleLowerCase().indexOf(search.toLocaleLowerCase()) > -1 || token.mint === search
-    )
+    const filteredList = tokenList
+      .filter((token) => token.symbol.toLocaleLowerCase().indexOf(search.toLocaleLowerCase()) > -1 || token.mint === search)
+      .sort(
+        (a, b) =>
+          a.symbol.toLocaleLowerCase().indexOf(search.toLocaleLowerCase()) -
+          b.symbol.toLocaleLowerCase().indexOf(search.toLocaleLowerCase())
+      )
     setDisplayList(filteredList.slice(0, perPage))
     setFilteredList(filteredList)
   }, [search, tokenList])

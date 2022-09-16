@@ -1,10 +1,12 @@
+import { ApiFarmPools } from '@raydium-io/raydium-sdk'
 import { Flex, Box, Avatar, Skeleton } from '@chakra-ui/react'
 import { useAppStore } from '@/store/useAppStore'
 import { transformWSolName, col1Style, colStyle } from '../util'
 
-export default function LoadingList() {
+export default function LoadingList({ defaultTab }: { defaultTab?: keyof Omit<ApiFarmPools, 'stake'> }) {
   const raydium = useAppStore((s) => s.raydium)
-  const farms = raydium?.apiData.farmPools?.data.raydium || []
+  const category = defaultTab || 'raydium'
+  const farms = raydium?.apiData.farmPools?.data[category] || []
   return (
     <>
       {farms.map((farm) => {

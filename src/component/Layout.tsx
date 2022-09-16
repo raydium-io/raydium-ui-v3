@@ -20,6 +20,9 @@ function Layout({ children }: { children: ReactNode }) {
         <Text as="span" size="md" mx="4px">
           <Link href="/farm">Farms</Link>
         </Text>
+        <Text as="span" size="md" mx="4px">
+          <Link href="/staking">Staking</Link>
+        </Text>
       </div>
       {children}
     </div>

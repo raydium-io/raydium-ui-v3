@@ -12,8 +12,8 @@ export interface FarmStore {
   hydratedFarmMap: Map<string, HydratedFarmInfo>
   loadFarmAct: () => void
   loadHydratedFarmAct: (params: { forceUpdate?: boolean; skipPrice?: boolean }) => Promise<void>
-  withdrawFarmAct: (params: { farmId: PublicKey; lpMint: PublicKey; amount: string }) => Promise<string>
-  depositFarmAct: (params: { farmId: PublicKey; lpMint: PublicKey; amount: string }) => Promise<string>
+  withdrawFarmAct: (params: { farmId: PublicKey; lpMint: PublicKey; amount: string; isStaking?: boolean }) => Promise<string>
+  depositFarmAct: (params: { farmId: PublicKey; lpMint: PublicKey; amount: string; isStaking?: boolean }) => Promise<string>
 }
 
 const initFarmSate = {
@@ -57,15 +57,17 @@ export const useFarmStore = createStore<FarmStore>(
       })
     },
 
-    withdrawFarmAct: async ({ farmId, lpMint, amount }) => {
+    withdrawFarmAct: async ({ farmId, lpMint, amount, isStaking }) => {
       const raydium = useAppStore.getState().raydium
       if (!raydium) return ''
       const { execute } = await raydium.farm.withdraw({
         farmId: new PublicKey(farmId),
-        amount: raydium.farm.lpDecimalAmount({
-          mint: lpMint,
-          amount
-        })
+        amount: isStaking
+          ? raydium.decimalAmount({ mint: lpMint, amount })
+          : raydium.farm.lpDecimalAmount({
+              mint: lpMint,
+              amount
+            })
       })
 
       try {
@@ -77,15 +79,17 @@ export const useFarmStore = createStore<FarmStore>(
         return ''
       }
     },
-    depositFarmAct: async ({ farmId, lpMint, amount }) => {
+    depositFarmAct: async ({ farmId, lpMint, amount, isStaking }) => {
       const raydium = useAppStore.getState().raydium
       if (!raydium) return ''
       const { execute } = await raydium.farm.deposit({
         farmId: new PublicKey(farmId),
-        amount: raydium.farm.lpDecimalAmount({
-          mint: lpMint,
-          amount
-        })
+        amount: isStaking
+          ? raydium.decimalAmount({ mint: lpMint, amount })
+          : raydium.farm.lpDecimalAmount({
+              mint: lpMint,
+              amount
+            })
       })
       try {
         const txId = await execute()

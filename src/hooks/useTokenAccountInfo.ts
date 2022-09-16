@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { useAppStore, useTokenAccountStore } from '@/store'
 
-function useInitConnection() {
+function useTokenAccountInfo() {
   const { connection } = useConnection()
   const { publicKey } = useWallet()
   const raydium = useAppStore((s) => s.raydium)
@@ -29,4 +29,4 @@ function useInitConnection() {
   }, [raydium, tokenAccounts, tokenAccountRawInfos])
 }
 
-export default useInitConnection
+export default useTokenAccountInfo
