@@ -9,10 +9,20 @@ const theme = extendTheme({
         variant: 'sm', // default is solid
         colorScheme: 'green' // default is gray
       }
+    },
+    Link: {
+      variants: {
+        outline: {
+          textDecoration: 'none',
+          '&:hover': {
+            textDecoration: 'none'
+          }
+        }
+      }
     }
   }
 })
-const ThemeProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
+const ThemeProvider: FC<PropsWithChildren<Record<string, never>>> = ({ children }) => {
   return <ChakraProvider theme={theme}>{children}</ChakraProvider>
 }
 

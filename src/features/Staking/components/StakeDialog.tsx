@@ -51,7 +51,7 @@ function StakeDialog({ isStake, farmInfo, getTokenBalanceUiAmount, confirmAct, o
         <ModalCloseButton />
         <ModalBody>
           {isStake ? 'Balance' : 'Deposited'}:{' '}
-          <Link onClick={handleClickMax} sx={{ '&:hover': { textDecoration: 'none' } }}>
+          <Link onClick={handleClickMax} variant="outline">
             {Number(balance)}
           </Link>
           <br />

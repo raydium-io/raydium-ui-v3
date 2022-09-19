@@ -28,7 +28,6 @@ export const useAppStore = createStore<AppState>(
 
       set({ initialing: true }, false, actionLog)
       const raydium = await Raydium.load(payload)
-      ;(window as any).raydium = raydium
       set({ raydium, initialing: false, connected: !!payload.owner }, false, actionLog)
       raydium.token.fetchTokenPrices(payload.defaultRaydiumTokenPrice)
 

@@ -45,7 +45,7 @@ function WithdrawLiquidity({ pairInfo, balance, onClose }: Props) {
           Pool: {pairInfo.name}
           <br />
           Balance:{' '}
-          <Link onClick={handleClickMax} sx={{ '&:hover': { textDecoration: 'none' } }}>
+          <Link onClick={handleClickMax} variant="outline">
             {balance}
           </Link>
           <DecimalInput value={value} title={pairInfo.name} decimals={lpTokenMap.get(pairInfo.lpMint)?.decimals} onChange={handleChange} />

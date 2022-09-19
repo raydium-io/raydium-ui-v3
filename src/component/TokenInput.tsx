@@ -8,7 +8,8 @@ import {
   InputRightElement,
   NumberInput,
   NumberInputField,
-  useDisclosure
+  useDisclosure,
+  Link
 } from '@chakra-ui/react'
 import { SplToken, TokenJson } from '@raydium-io/raydium-sdk'
 import { useCallback, useEffect, useRef } from 'react'
@@ -42,6 +43,16 @@ function TokenInput(props: Props) {
     [onChange, side]
   )
 
+  const handleFocus = useCallback(() => {
+    onFocus?.(side)
+  }, [onFocus, side])
+
+  const handleClickBalance = useCallback(() => {
+    if (!balance) return
+    handleFocus()
+    handleChange(balance, Number(balance))
+  }, [handleFocus, handleChange, balance])
+
   const handleSelectToken = useCallback(
     (token: TokenJson) => {
       onTokenChange?.(token, side)
@@ -63,10 +74,6 @@ function TokenInput(props: Props) {
     [token]
   )
 
-  const handleFocus = useCallback(() => {
-    onFocus?.(side)
-  }, [onFocus, side])
-
   useEffect(() => {
     const val = handleParseVal(valRef.current)
     handleChange(val, Number(val))
@@ -76,7 +83,9 @@ function TokenInput(props: Props) {
     <Box width="fit-content">
       {balance && (
         <Flex justifyContent="flex-end">
-          {balance}
+          <Link variant="outline" mr="4px" onClick={handleClickBalance}>
+            {balance}
+          </Link>
           {token?.symbol}
         </Flex>
       )}

@@ -50,7 +50,7 @@ function DWFarmDialog({ isDeposit, farmInfo, getTokenBalanceUiAmount, confirmAct
         <ModalCloseButton />
         <ModalBody>
           {isDeposit ? 'Balance' : 'Deposited'}:{' '}
-          <Link onClick={handleClickMax} sx={{ '&:hover': { textDecoration: 'none' } }}>
+          <Link onClick={handleClickMax} variant="outline">
             {Number(balance)}
           </Link>
           <br />

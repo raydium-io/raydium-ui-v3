@@ -44,7 +44,13 @@ function Liquidity() {
   const [tokenBase, tokenQuote] = [tokenMap.get(baseMint), tokenMap.get(quoteMint)]
   const [baseBalance, quoteBalance] = [getTokenBalanceUiAmount({ mint: baseMint }), getTokenBalanceUiAmount({ mint: quoteMint })]
   const btnDisabled =
-    poolNotFound || !currentSDKPoolInfo || !baseMint || !baseAmount || !baseBalance.gt(baseAmount) || !quoteBalance.gt(quoteAmount)
+    poolNotFound ||
+    !currentSDKPoolInfo ||
+    !baseMint ||
+    !baseAmount ||
+    !quoteAmount ||
+    !baseBalance.amount.gte(baseAmount) ||
+    !quoteBalance.amount.gte(quoteAmount)
 
   useEffect(() => {
     const { baseMint, quoteMint } = router.query as { baseMint: string; quoteMint: string }
