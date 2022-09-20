@@ -1,4 +1,4 @@
-import { TokenJson, SplToken } from '@raydium-io/raydium-sdk'
+import { TokenJson, SplToken } from 'test-raydium-sdk-v2'
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'
 

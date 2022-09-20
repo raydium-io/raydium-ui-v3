@@ -1,4 +1,4 @@
-import { SDKParsedLiquidityInfo, Raydium, WSOLMint, SOLMint } from '@raydium-io/raydium-sdk'
+import { SDKParsedLiquidityInfo, Raydium, WSOLMint, SOLMint } from 'test-raydium-sdk-v2'
 import { Flex } from '@chakra-ui/react'
 import { formatLocaleStr } from '@/util/number'
 

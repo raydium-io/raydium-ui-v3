@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, Link } from '@chakra-ui/react'
-import { HydratedFarmInfo } from '@raydium-io/raydium-sdk'
+import { HydratedFarmInfo } from 'test-raydium-sdk-v2'
 import { FarmStore, TokenAccountStore } from '@/store'
 import DecimalInput from '@/component/DecimalInput'
 import { transformWSolName } from '../util'

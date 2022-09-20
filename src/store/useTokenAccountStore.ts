@@ -1,4 +1,4 @@
-import { parseTokenAccountResp, TokenAccount, TokenAccountRaw, parseNumberInfo, BN_ZERO, WSOLMint } from '@raydium-io/raydium-sdk'
+import { parseTokenAccountResp, TokenAccount, TokenAccountRaw, parseNumberInfo, BN_ZERO, WSOLMint } from 'test-raydium-sdk-v2'
 import { Connection, PublicKey } from '@solana/web3.js'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import createStore from './createStore'

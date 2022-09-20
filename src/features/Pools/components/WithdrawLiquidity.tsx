@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, Link } from '@chakra-ui/react'
-import { ApiJsonPairInfo } from '@raydium-io/raydium-sdk'
+import { ApiJsonPairInfo } from 'test-raydium-sdk-v2'
 import { useLiquidityStore } from '@/store'
 import DecimalInput from '@/component/DecimalInput'
 

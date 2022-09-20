@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, ChangeEvent, MouseEvent, useRef } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
-import { PairJsonInfo, ApiJsonPairInfo } from '@raydium-io/raydium-sdk'
+import { PairJsonInfo, ApiJsonPairInfo } from 'test-raydium-sdk-v2'
 import Link from 'next/link'
 import { usePoolStore } from './usePoolStore'
 import { formatLocaleStr } from '@/util/number'

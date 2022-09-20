@@ -31,15 +31,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "sdk-local": "yarn add @raydium-io/raydium-sdk@file:../raydium-sdk/lib",
-    "sdk-update": "yarn remove @raydium-io/raydium-sdk && yarn sdk-local"
+    "sdk-local": "yarn add test-raydium-sdk-v2@file:../raydium-sdk/lib",
+    "sdk-update": "yarn remove test-raydium-sdk-v2 && yarn sdk-local"
   },
   "dependencies": {
     "@chakra-ui/react": "^2.3.1",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@project-serum/serum": "^0.13.65",
-    "@raydium-io/raydium-sdk": "file:../raydium-sdk/lib",
+    "test-raydium-sdk-v2": "^2.0.0-beta.0",
     "@solana/spl-token": "^0.3.4",
     "@solana/wallet-adapter-base": "^0.9.15",
     "@solana/wallet-adapter-react": "^0.15.17",

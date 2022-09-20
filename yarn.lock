@@ -1374,7 +1374,7 @@
     bs58 "^4.0.1"
     eventemitter3 "^4.0.7"
 
-"@raydium-io/raydium-sdk@file:../raydium-sdk/lib":
+"test-raydium-sdk-v2@file:../raydium-sdk/lib":
   version "0.0.0"
 
 "@rushstack/eslint-patch@^1.1.3":

@@ -7,7 +7,7 @@ import {
   TokenAmount,
   PublicKeyish,
   LiquiditySide
-} from '@raydium-io/raydium-sdk'
+} from 'test-raydium-sdk-v2'
 
 import createStore from './createStore'
 import { useAppStore } from './useAppStore'

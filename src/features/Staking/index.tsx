@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { Flex, Box, useDisclosure, Button } from '@chakra-ui/react'
-import { HydratedFarmInfo } from '@raydium-io/raydium-sdk'
+import { HydratedFarmInfo } from 'test-raydium-sdk-v2'
 import shallow from 'zustand/shallow'
 import { useFarmStore, useTokenAccountStore } from '@/store'
 import ConnectedButton from '@/component/ConnectedButton'

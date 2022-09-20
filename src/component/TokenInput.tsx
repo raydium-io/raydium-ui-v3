@@ -11,7 +11,7 @@ import {
   useDisclosure,
   Link
 } from '@chakra-ui/react'
-import { SplToken, TokenJson } from '@raydium-io/raydium-sdk'
+import { SplToken, TokenJson } from 'test-raydium-sdk-v2'
 import { useCallback, useEffect, useRef } from 'react'
 
 import TokenSelectDialog from './TokenSelectDialog'

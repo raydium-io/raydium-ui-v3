@@ -1,4 +1,4 @@
-import { ApiFarmPools } from '@raydium-io/raydium-sdk'
+import { ApiFarmPools } from 'test-raydium-sdk-v2'
 import { Flex, Box, Avatar, Skeleton } from '@chakra-ui/react'
 import { useAppStore } from '@/store/useAppStore'
 import { transformWSolName, col1Style, colStyle } from '../util'

@@ -1,4 +1,4 @@
-import { FarmPoolJsonInfo, SdkParsedFarmInfo, HydratedFarmInfo } from '@raydium-io/raydium-sdk'
+import { FarmPoolJsonInfo, SdkParsedFarmInfo, HydratedFarmInfo } from 'test-raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import { toastSubject } from '@/hooks/useGlobalToast'
 import { txStatusSubject } from '@/hooks/useTxStatus'
@@ -27,6 +27,7 @@ export const useFarmStore = createStore<FarmStore>(
   (set, get) => ({
     ...initFarmSate,
     loadFarmAct: (forceUpdate?: boolean) => {
+      console.log(123123)
       const raydium = useAppStore.getState().raydium
       if (!raydium) return
       raydium.farm.load({ forceUpdate: !!forceUpdate }).then(() => {

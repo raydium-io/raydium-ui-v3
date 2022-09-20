@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { Tabs, TabList, TabPanels, Tab, TabPanel, Flex, Box, Hide } from '@chakra-ui/react'
-import { HydratedFarmInfo, ApiFarmPools } from '@raydium-io/raydium-sdk'
+import { HydratedFarmInfo, ApiFarmPools } from 'test-raydium-sdk-v2'
 import { useFarmStore } from '@/store/useFarmStore'
 import { useTokenStore } from '@/store/useTokenStore'
 import FarmListItem from './components/FarmListItem'

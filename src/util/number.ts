@@ -1,4 +1,4 @@
-import { Numberish, toFraction } from '@raydium-io/raydium-sdk'
+import { Numberish, toFraction } from 'test-raydium-sdk-v2'
 import Big from 'big.js'
 
 export function formatLocaleStr(num: Numberish, decimalPlace?: number) {

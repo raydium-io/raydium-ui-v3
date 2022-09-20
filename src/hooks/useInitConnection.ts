@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { useAppStore } from '@/store/useAppStore'
 import shallow from 'zustand/shallow'
-import { RaydiumApiBatchRequestParams } from '@raydium-io/raydium-sdk'
+import { RaydiumApiBatchRequestParams } from 'test-raydium-sdk-v2'
 import { toastSubject } from './useGlobalToast'
 
 function useInitConnection(props: Omit<RaydiumApiBatchRequestParams, 'api'>) {

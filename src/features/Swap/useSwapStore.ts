@@ -1,4 +1,4 @@
-import { Percent, GetAmountOutReturn, WSOLMint, SOLMint } from '@raydium-io/raydium-sdk'
+import { Percent, GetAmountOutReturn, WSOLMint, SOLMint } from 'test-raydium-sdk-v2'
 import { createStore, useAppStore } from '@/store'
 import { isSolWSol, isSol, isWSol } from './util'
 import { toastSubject } from '@/hooks/useGlobalToast'

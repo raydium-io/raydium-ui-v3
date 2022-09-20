@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Api, ApiFarmPools } from '@raydium-io/raydium-sdk'
+import { Api, ApiFarmPools } from 'test-raydium-sdk-v2'
 import { useLocalStorage } from '@solana/wallet-adapter-react'
 import shallow from 'zustand/shallow'
 import { useAppStore, useFarmStore, useLiquidityStore } from '@/store'

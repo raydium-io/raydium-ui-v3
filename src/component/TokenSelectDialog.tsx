@@ -12,7 +12,7 @@ import {
   Input
 } from '@chakra-ui/react'
 import InfiniteScroll from 'react-infinite-scroll-component'
-import { TokenJson } from '@raydium-io/raydium-sdk'
+import { TokenJson } from 'test-raydium-sdk-v2'
 import shallow from 'zustand/shallow'
 import { useTokenStore, useTokenAccountStore } from '@/store'
 

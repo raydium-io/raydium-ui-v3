@@ -1,5 +1,5 @@
 import { Connection, PublicKey } from '@solana/web3.js'
-import { Raydium, RaydiumLoadParams } from '@raydium-io/raydium-sdk'
+import { Raydium, RaydiumLoadParams } from 'test-raydium-sdk-v2'
 import createStore from './createStore'
 import { useTokenStore } from './useTokenStore'
 import { useLiquidityStore } from './useLiquidityStore'

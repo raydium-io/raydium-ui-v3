@@ -1,4 +1,4 @@
-import { SplToken, Price } from '@raydium-io/raydium-sdk'
+import { SplToken, Price } from 'test-raydium-sdk-v2'
 
 interface Props {
   tokenInput: SplToken

@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/router'
-import { Button } from '@chakra-ui/react'
-import { TokenAmount, TokenJson, Token, WSOLMint } from '@raydium-io/raydium-sdk'
+import { TokenAmount, TokenJson, Token, WSOLMint } from 'test-raydium-sdk-v2'
 import { useTokenStore, useLiquidityStore, useAppStore, useTokenAccountStore } from '@/store'
 import TokenInput from '@/component/TokenInput'
 import ContentCard from '@/component/ContentCard'

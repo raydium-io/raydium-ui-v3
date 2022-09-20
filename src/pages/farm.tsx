@@ -1,4 +1,4 @@
-import { ApiFarmPools } from '@raydium-io/raydium-sdk'
+import { ApiFarmPools } from 'test-raydium-sdk-v2'
 import Farm from '@/features/Farm'
 import useInitFarmData, { fetchFarmInitialProps } from '@/features/Farm/useInitFarmData'
 

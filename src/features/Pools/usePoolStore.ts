@@ -1,4 +1,4 @@
-import { PairJsonInfo } from '@raydium-io/raydium-sdk'
+import { PairJsonInfo } from 'test-raydium-sdk-v2'
 import { createStore, useAppStore } from '@/store'
 
 interface PoolStore {

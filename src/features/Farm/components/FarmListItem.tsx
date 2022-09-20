@@ -1,6 +1,6 @@
 import { useCallback, useRef, MouseEvent } from 'react'
 import { Flex, Box, Avatar, useDisclosure, Button, Hide } from '@chakra-ui/react'
-import { HydratedFarmInfo, Rounding, SplToken } from '@raydium-io/raydium-sdk'
+import { HydratedFarmInfo, Rounding, SplToken } from 'test-raydium-sdk-v2'
 import ConnectedOnly from '@/component/ConnectedOnly'
 import DWFarmDialog from './DWFarmDialog'
 import { transformWSolName, col1Style, colStyle } from '../util'

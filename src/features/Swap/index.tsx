@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { Button, Flex } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
-import { TokenJson } from '@raydium-io/raydium-sdk'
+import { TokenJson } from 'test-raydium-sdk-v2'
 import shallow from 'zustand/shallow'
 
 import { useTokenStore, useTokenAccountStore } from '@/store'
