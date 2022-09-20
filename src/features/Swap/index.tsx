@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { Button } from '@chakra-ui/react'
+import { Button, Flex } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { TokenJson } from '@raydium-io/raydium-sdk'
 import shallow from 'zustand/shallow'
@@ -8,8 +8,10 @@ import { useTokenStore, useTokenAccountStore } from '@/store'
 import { useSwapStore, ComputeParams } from './useSwapStore'
 import TokenInput from '@/component/TokenInput'
 import ExchangeRate from '@/component/ExchangeRate'
+import ContentCard from '@/component/ContentCard'
 import { debounceTime, Subject, switchMap, fromEvent, exhaustMap } from 'rxjs'
 import { getSwapPairCache, setSwapPairCache } from './util'
+import { toBig } from '@/util/number'
 
 const computeSubject = new Subject<ComputeParams>()
 
@@ -88,27 +90,41 @@ function Swap() {
   ]
 
   const ata = tokenAccountMap.get(inputMint)?.[0]
-  const isButtonDisabled = !ata || ata.amount.toNumber() < Number(amountIn) || ata.amount.isZero() || !Number(amountIn) || computing
+
+  const isButtonDisabled =
+    !ata ||
+    !amountIn ||
+    ata.amount.isZero() ||
+    toBig({ amount: amountIn, decimals: tokenInput?.decimals || 4, decimalDone: true }).lte(0) ||
+    toBig({ amount: ata.amount.toString(), decimals: tokenInput?.decimals || 4 }).lt(amountIn) ||
+    computing
 
   return (
-    <>
+    <ContentCard>
       Swap
       <div>
-        <TokenInput side="input" token={tokenInput} value={amountIn} onChange={handleInputChange} onTokenChange={handleSelectToken} />
-        {balanceInput} {tokenInput?.symbol}
-        <Button display="block" my="10px" onClick={handleChangeSide}>
-          ^
-        </Button>
+        <TokenInput
+          side="input"
+          token={tokenInput}
+          balance={balanceInput}
+          value={amountIn}
+          onChange={handleInputChange}
+          onTokenChange={handleSelectToken}
+        />
+        <Flex justifyContent="center">
+          <Button display="block" my="10px" onClick={handleChangeSide}>
+            ↕
+          </Button>
+        </Flex>
         <TokenInput
           side="output"
           token={tokenOutput}
+          balance={balanceOutput}
+          disableClickBalance={true}
           value={computedSwapResult?.amountOut.toExact() || ''}
           onTokenChange={handleSelectToken}
           readonly={true}
         />
-        <div>
-          {balanceOutput} {tokenOutput?.symbol}
-        </div>
         {computedSwapResult && <div>min received {computedSwapResult?.minAmountOut.toExact()}</div>}
         {computedSwapResult?.executionPrice && tokenInput && tokenOutput && (
           <ExchangeRate tokenInput={tokenInput!} tokenOutput={tokenOutput!} executionPrice={computedSwapResult?.executionPrice} />
@@ -117,7 +133,7 @@ function Swap() {
           Swap
         </Button>
       </div>
-    </>
+    </ContentCard>
   )
 }
 

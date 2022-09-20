@@ -17,7 +17,7 @@ function DWFarmDialog({ isDeposit, farmInfo, getTokenBalanceUiAmount, confirmAct
   const [loading, setLoading] = useState(false)
   const [value, setValue] = useState('')
   const depositedBalance = getTokenBalanceUiAmount({ mint: farmInfo.lpMint.toBase58(), isLpToken: true })
-  const balance = isDeposit ? depositedBalance.text : farmInfo.userStakedLpAmount?.toFixed()
+  const balance = isDeposit ? depositedBalance.text : farmInfo.userStakedLpAmount?.toExact()
 
   const handleChange = useCallback((val: string) => {
     setValue(val)
@@ -50,8 +50,8 @@ function DWFarmDialog({ isDeposit, farmInfo, getTokenBalanceUiAmount, confirmAct
         <ModalCloseButton />
         <ModalBody>
           {isDeposit ? 'Balance' : 'Deposited'}:{' '}
-          <Link onClick={handleClickMax} sx={{ '&:hover': { textDecoration: 'none' } }}>
-            {Number(balance)}
+          <Link onClick={handleClickMax} variant="outline">
+            {balance}
           </Link>
           <br />
           <DecimalInput

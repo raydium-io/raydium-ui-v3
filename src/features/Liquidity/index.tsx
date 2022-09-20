@@ -4,11 +4,12 @@ import { Button } from '@chakra-ui/react'
 import { TokenAmount, TokenJson, Token, WSOLMint } from '@raydium-io/raydium-sdk'
 import { useTokenStore, useLiquidityStore, useAppStore, useTokenAccountStore } from '@/store'
 import TokenInput from '@/component/TokenInput'
+import ContentCard from '@/component/ContentCard'
+import ConnectedButton from '@/component/ConnectedButton'
 import PairInfo from './components/PairInfo'
 import shallow from 'zustand/shallow'
 import { SIDE, getPairCache, setPairCache } from './util'
 import { Subject, debounceTime, switchMap, filter, tap } from 'rxjs'
-import Big from 'big.js'
 
 interface ComputeParam {
   fixedAmount: TokenAmount
@@ -44,7 +45,13 @@ function Liquidity() {
   const [tokenBase, tokenQuote] = [tokenMap.get(baseMint), tokenMap.get(quoteMint)]
   const [baseBalance, quoteBalance] = [getTokenBalanceUiAmount({ mint: baseMint }), getTokenBalanceUiAmount({ mint: quoteMint })]
   const btnDisabled =
-    poolNotFound || !currentSDKPoolInfo || !baseMint || !baseAmount || !baseBalance.gt(baseAmount) || !quoteBalance.gt(quoteAmount)
+    poolNotFound ||
+    !currentSDKPoolInfo ||
+    !baseMint ||
+    !baseAmount ||
+    !quoteAmount ||
+    !baseBalance.amount.gte(baseAmount) ||
+    !quoteBalance.amount.gte(quoteAmount)
 
   useEffect(() => {
     const { baseMint, quoteMint } = router.query as { baseMint: string; quoteMint: string }
@@ -167,7 +174,7 @@ function Liquidity() {
 
   if (!raydium) return null
   return (
-    <>
+    <ContentCard>
       Add Liquidity
       <div>
         <TokenInput
@@ -195,11 +202,11 @@ function Liquidity() {
         Max another: {maxAnother?.toExact()} {maxAnother?.token.mint.equals(WSOLMint) ? 'SOL' : maxAnother?.token.symbol}
         <br />
         <PairInfo baseMint={baseMint} quoteMint={quoteMint} currentSDKPoolInfo={currentSDKPoolInfo} raydium={raydium} />
-        <Button disabled={btnDisabled} isLoading={loadingPoolInfo} loadingText="Loading pool.." onClick={handleAddLiquidity}>
+        <ConnectedButton disabled={btnDisabled} isLoading={loadingPoolInfo} loadingText="Loading pool.." onClick={handleAddLiquidity}>
           {poolNotFound ? 'Pool Not Found' : 'Add Liquidity'}
-        </Button>
+        </ConnectedButton>
       </div>
-    </>
+    </ContentCard>
   )
 }
 

@@ -2,13 +2,12 @@ import { useEffect, useState, useRef } from 'react'
 import { Flex, Box, useDisclosure, Button } from '@chakra-ui/react'
 import { HydratedFarmInfo } from '@raydium-io/raydium-sdk'
 import shallow from 'zustand/shallow'
-import { useAppStore, useFarmStore, useTokenAccountStore } from '@/store'
+import { useFarmStore, useTokenAccountStore } from '@/store'
 import ConnectedButton from '@/component/ConnectedButton'
 import ConnectedOnly from '@/component/ConnectedOnly'
 import StakeDialog from './components/StakeDialog'
 
 export default function Staking() {
-  const connected = useAppStore((s) => s.connected)
   const [hydratedFarms, depositFarmAct, withdrawFarmAct] = useFarmStore(
     (s) => [s.hydratedFarms, s.depositFarmAct, s.withdrawFarmAct],
     shallow

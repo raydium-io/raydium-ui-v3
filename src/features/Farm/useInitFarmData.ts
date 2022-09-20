@@ -32,6 +32,7 @@ function useInitFarmData({ defaultApiFarms }: { defaultApiFarms: ApiFarmPools })
   }, [raydium, defaultApiFarms, loadPoolsAct, autoConnectWallet])
 
   useEffect(() => () => loadFarmSubject.next({ forceUpdate: true, skipPrice: true }), [connected])
+
   useEffect(() => {
     let listenerId: number | undefined
     if (connection && publicKey) {
@@ -43,7 +44,7 @@ function useInitFarmData({ defaultApiFarms }: { defaultApiFarms: ApiFarmPools })
     return () => {
       listenerId && connection && connection!.removeAccountChangeListener(listenerId)
     }
-  }, [connection, publicKey])
+  }, [publicKey, connection?.rpcEndpoint])
 }
 
 export const fetchFarmInitialProps = async () => {

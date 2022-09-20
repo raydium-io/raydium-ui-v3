@@ -75,18 +75,20 @@ export default function FarmListItem({ farmPool, tokenMap }: Props) {
           {farmPool.stakedLpAmount?.toFixed(0, { groupSeparator: ',' })} LP
         </Box>
         <Hide below="md">
-          <Box sx={colStyle}>
-            {!getTokenBalanceUiAmount({ mint: farmPool.lpMint.toBase58(), decimals: 0, isLpToken: true }).isZero && (
-              <Button data-type="deposit" onClick={handleClick}>
-                Deposit
-              </Button>
-            )}
-            {farmPool.userStakedLpAmount && !farmPool.userStakedLpAmount.isZero() && (
-              <Button data-type="withdraw" onClick={handleClick}>
-                Withdraw
-              </Button>
-            )}
-          </Box>
+          <ConnectedOnly>
+            <Box sx={colStyle}>
+              {!getTokenBalanceUiAmount({ mint: farmPool.lpMint.toBase58(), decimals: 0, isLpToken: true }).isZero && (
+                <Button data-type="deposit" onClick={handleClick}>
+                  Deposit
+                </Button>
+              )}
+              {farmPool.userStakedLpAmount && !farmPool.userStakedLpAmount.isZero() && (
+                <Button data-type="withdraw" onClick={handleClick}>
+                  Withdraw
+                </Button>
+              )}
+            </Box>
+          </ConnectedOnly>
         </Hide>
       </Flex>
       {isOpen && (
