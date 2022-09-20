@@ -25,13 +25,14 @@ interface Props {
   value: string
   side?: string
   balance?: string
+  disableClickBalance?: boolean
   onChange?: (val: string, valNumber: number, side?: string) => void
   onTokenChange?: (token: TokenJson, side?: string) => void
   onFocus?: (side?: string) => void
 }
 
 function TokenInput(props: Props) {
-  const { id, name, token, balance, onChange, onTokenChange, onFocus, side, readonly, value, loading } = props
+  const { id, name, token, balance, disableClickBalance, onChange, onTokenChange, onFocus, side, readonly, value, loading } = props
   const { isOpen, onOpen, onClose } = useDisclosure()
   const valRef = useRef(value)
   valRef.current = value
@@ -83,10 +84,16 @@ function TokenInput(props: Props) {
     <Box width="fit-content">
       {balance && (
         <Flex justifyContent="flex-end">
-          <Link variant="outline" mr="4px" onClick={handleClickBalance}>
-            {balance}
-          </Link>
-          {token?.symbol}
+          {disableClickBalance ? (
+            balance
+          ) : (
+            <Link variant="outline" onClick={handleClickBalance}>
+              {balance}
+            </Link>
+          )}
+          <Text as="span" ml="4px">
+            {token?.symbol}
+          </Text>
         </Flex>
       )}
       <Flex alignItems="center" mb="10px">

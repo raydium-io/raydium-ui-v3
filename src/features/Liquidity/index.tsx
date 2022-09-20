@@ -4,11 +4,11 @@ import { Button } from '@chakra-ui/react'
 import { TokenAmount, TokenJson, Token, WSOLMint } from '@raydium-io/raydium-sdk'
 import { useTokenStore, useLiquidityStore, useAppStore, useTokenAccountStore } from '@/store'
 import TokenInput from '@/component/TokenInput'
+import ContentCard from '@/component/ContentCard'
 import PairInfo from './components/PairInfo'
 import shallow from 'zustand/shallow'
 import { SIDE, getPairCache, setPairCache } from './util'
 import { Subject, debounceTime, switchMap, filter, tap } from 'rxjs'
-import Big from 'big.js'
 
 interface ComputeParam {
   fixedAmount: TokenAmount
@@ -173,7 +173,7 @@ function Liquidity() {
 
   if (!raydium) return null
   return (
-    <>
+    <ContentCard>
       Add Liquidity
       <div>
         <TokenInput
@@ -205,7 +205,7 @@ function Liquidity() {
           {poolNotFound ? 'Pool Not Found' : 'Add Liquidity'}
         </Button>
       </div>
-    </>
+    </ContentCard>
   )
 }
 

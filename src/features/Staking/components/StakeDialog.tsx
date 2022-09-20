@@ -52,7 +52,7 @@ function StakeDialog({ isStake, farmInfo, getTokenBalanceUiAmount, confirmAct, o
         <ModalBody>
           {isStake ? 'Balance' : 'Deposited'}:{' '}
           <Link onClick={handleClickMax} variant="outline">
-            {Number(balance)}
+            {balance}
           </Link>
           <br />
           <DecimalInput

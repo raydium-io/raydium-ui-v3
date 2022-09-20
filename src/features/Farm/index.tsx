@@ -24,7 +24,7 @@ export default function Farm() {
     setDisplayList(
       hydratedFarms.filter((pool) => {
         const tab = tabs[tabIndex]
-        const filter = tab === 'staked' ? pool.userHasStaked : pool.category === tab
+        const filter = tab === 'staked' ? pool.userHasStaked && !pool.isStakePool : pool.category === tab
         return filter && !pool.isClosedPool
       })
     )

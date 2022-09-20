@@ -39,10 +39,14 @@ function useInitConnection(props: Omit<RaydiumApiBatchRequestParams, 'api'>) {
   useEffect(() => {
     useAppStore.setState({ connection }, false, 'useInitConnection')
     // raydium sdk initialization can be done with connection only
+    if (raydium) {
+      raydium.setConnection(connection)
+      return
+    }
     if (connection) {
       initRaydiumAct({ connection, ...props })
     }
-  }, [initRaydiumAct, connection])
+  }, [initRaydiumAct, connection?.rpcEndpoint, raydium])
 
   useEffect(() => {
     // if user connected wallet, update pubk
