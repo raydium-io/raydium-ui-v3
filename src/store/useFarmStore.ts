@@ -27,7 +27,6 @@ export const useFarmStore = createStore<FarmStore>(
   (set, get) => ({
     ...initFarmSate,
     loadFarmAct: (forceUpdate?: boolean) => {
-      console.log(123123)
       const raydium = useAppStore.getState().raydium
       if (!raydium) return
       raydium.farm.load({ forceUpdate: !!forceUpdate }).then(() => {

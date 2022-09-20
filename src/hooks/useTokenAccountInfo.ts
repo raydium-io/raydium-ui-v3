@@ -17,7 +17,7 @@ function useTokenAccountInfo() {
     return () => {
       connection.removeAccountChangeListener(listenerId)
     }
-  }, [connection, publicKey, fetchTokenAccountAct])
+  }, [connection?.rpcEndpoint, publicKey, fetchTokenAccountAct])
 
   useEffect(() => {
     if (raydium && tokenAccounts.length) {

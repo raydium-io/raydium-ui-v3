@@ -2,8 +2,9 @@ import { useEffect } from 'react'
 import { Api, ApiFarmPools } from 'test-raydium-sdk-v2'
 import { useLocalStorage } from '@solana/wallet-adapter-react'
 import shallow from 'zustand/shallow'
-import { useAppStore, useFarmStore, useLiquidityStore } from '@/store'
 import { debounceTime, Subject, switchMap } from 'rxjs'
+import { useAppStore, useFarmStore, useLiquidityStore } from '@/store'
+import { apiSsrCache } from '@/util/ssrCache'
 
 const loadFarmSubject = new Subject<{ forceUpdate?: boolean; skipPrice?: boolean }>()
 
@@ -27,7 +28,7 @@ function useInitFarmData({ defaultApiFarms }: { defaultApiFarms: ApiFarmPools })
   useEffect(() => {
     if (!raydium) return
     loadPoolsAct()
-    raydium.apiData.farmPools = { fetched: Date.now(), data: defaultApiFarms }
+    if (defaultApiFarms) raydium.apiData.farmPools = { fetched: Date.now(), data: defaultApiFarms }
     !autoConnectWallet && loadFarmSubject.next({})
   }, [raydium, defaultApiFarms, loadPoolsAct, autoConnectWallet])
 
@@ -48,8 +49,12 @@ function useInitFarmData({ defaultApiFarms }: { defaultApiFarms: ApiFarmPools })
 }
 
 export const fetchFarmInitialProps = async () => {
+  const key = 'defaultApiFarms'
+  const cache = apiSsrCache.get(key)
+  if (cache) return { defaultApiFarms: cache }
   const api = new Api({ cluster: 'mainnet', timeout: 10 * 1000 })
   const defaultApiFarms = await api.getFarmPools()
+  apiSsrCache.set(key, defaultApiFarms)
   return { defaultApiFarms }
 }
 
