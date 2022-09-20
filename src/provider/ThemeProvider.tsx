@@ -1,4 +1,4 @@
-import type { FC, PropsWithChildren } from 'react'
+import type { FC, ReactNode } from 'react'
 
 import { ChakraProvider, extendTheme } from '@chakra-ui/react'
 
@@ -22,7 +22,7 @@ const theme = extendTheme({
     }
   }
 })
-const ThemeProvider: FC<PropsWithChildren<Record<string, never>>> = ({ children }) => {
+const ThemeProvider: FC<{ children: ReactNode }> = ({ children }) => {
   return <ChakraProvider theme={theme}>{children}</ChakraProvider>
 }
 
