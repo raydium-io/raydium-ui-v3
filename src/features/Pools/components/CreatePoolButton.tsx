@@ -1,3 +1,4 @@
+import { useCallback } from "react"
 import { HStack, Text, useDisclosure } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
 
@@ -6,12 +7,24 @@ import { Desktop, Mobile } from '@/components/MobileDesktop'
 import { CreatePoolEntryDialog } from '@/features/Create/components/CreatePoolEntryDialog'
 import PlusCircleIcon from '@/icons/misc/PlusCircleIcon'
 import { colors } from '@/theme/cssVariables'
+import { useRouter } from 'next/router'
 
 export type PoolType = 'standard' | 'concentrated'
 
 export default function CreatePoolButton() {
+  const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { t } = useTranslation()
+
+  const onCreatePool = useCallback(() => {
+    let to = '/liquidity/create-pool'
+    router.push({
+      pathname: to,
+      query: {
+        ...router.query
+      }
+    })
+  }, [router])
 
   return (
     <>
@@ -24,7 +37,7 @@ export default function CreatePoolButton() {
         </HStack>
       </Mobile>
       <Desktop>
-        <Button onClick={onOpen} variant="outline">
+        <Button onClick={onCreatePool} variant="outline">
           {t('liquidity.create_pool')}
         </Button>
       </Desktop>

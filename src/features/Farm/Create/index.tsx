@@ -83,7 +83,7 @@ export default function CreateFarm() {
     () => formattedData?.filter((p) => p.id !== defaultPoolRef.current) || [],
     [formattedData]
   ) as ApiV3PoolInfoConcentratedItem[]
-  const createdPools = allCreatedPools.filter((p) => p.rewardDefaultInfos.length === 0)
+  const data = allCreatedPools.filter((p) => p.rewardDefaultInfos.length === 0)
 
   const handleCreateFarm = useEvent(() => {
     onSending()
@@ -140,6 +140,7 @@ export default function CreateFarm() {
     })
   })
 
+  const createdPools = data.slice(0, 3)
   /** step method */
   const routeToStepReward = () => {
     setCurrentStep('reward')

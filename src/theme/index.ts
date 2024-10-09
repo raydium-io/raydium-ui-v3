@@ -40,6 +40,26 @@ export const theme = extendTheme({
   radii,
   breakpoints,
 
+  styles: {
+    global: {
+      // Define CSS variables in :root
+      ':root': {
+        '--primary-color': '#00ffff',
+        '--secondary-color': '#ff00ff',
+        '--bg-color': '#0a0a2a',
+        '--text-color': '#ffffff'
+      },
+      // Apply the background and text color to the body element
+      body: {
+        backgroundColor: 'var(--bg-color)', // Use the CSS variable for background
+        color: 'var(--text-color)', // Use the CSS variable for text color
+        margin: 0,
+        padding: 0,
+        fontFamily: 'sans-serif' // Set a default font family
+      }
+    }
+  },
+
   components: {
     Divider: dividerTheme,
     Avatar,

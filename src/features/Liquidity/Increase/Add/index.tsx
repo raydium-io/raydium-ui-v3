@@ -1,5 +1,4 @@
 import { Flex, HStack, Text, useDisclosure } from '@chakra-ui/react'
-import { ApiV3PoolInfoStandardItem, ApiV3Token, TokenInfo, ApiV3PoolInfoStandardItemCpmm } from '@raydium-io/raydium-sdk-v2'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -8,24 +7,40 @@ import IntervalCircle, { IntervalCircleHandler } from '@/components/IntervalCirc
 import TokenInput from '@/components/TokenInput'
 import HorizontalSwitchSmallIcon from '@/icons/misc/HorizontalSwitchSmallIcon'
 import { useAppStore, useLiquidityStore, useTokenAccountStore } from '@/store'
-import { RpcAmmPool } from '@/hooks/pool/amm/useFetchRpcPoolData'
-import { RpcCpmmPool } from '@/hooks/pool/amm/useFetchCpmmRpcPoolData'
 import { colors } from '@/theme/cssVariables'
 import { formatCurrency } from '@/utils/numberish/formatter'
-import { getMintSymbol, wSolToSolString } from '@/utils/token'
-// import AutoSwapModal from './components/AutoSwapModal'
+import { getTokenSymbol, convertWsolToSolString } from '@/utils/token' // Custom utility function replacements
 import StakeLpModal from './components/StakeLpModal'
 import { SlippageAdjuster } from '@/components/SlippageAdjuster'
 
 import Decimal from 'decimal.js'
 import shallow from 'zustand/shallow'
-// import { QuestionToolTip } from '@/components/QuestionToolTip'
 import { useEvent } from '@/hooks/useEvent'
 import { throttle } from '@/utils/functionMethods'
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 import BN from 'bn.js'
 
+// Custom type interfaces to replace Raydium SDK types
+interface PoolInfo {
+  mintA: { address: string; symbol: string; decimals: number }
+  mintB: { address: string; symbol: string; decimals: number }
+  mintAmountA: number
+  mintAmountB: number
+  lpAmount: number
+  lpPrice: number
+  lpMint: { decimals: number }
+  farmOngoingCount: number
+  programId: string
+}
+
+interface TokenInfo {
+  address: string
+  symbol: string
+  decimals: number
+}
+
 const InputWidth = ['100%']
+
 export default function AddLiquidity({
   pool,
   poolNotFound,
@@ -35,14 +50,14 @@ export default function AddLiquidity({
   onSelectToken,
   onRefresh
 }: {
-  pool?: ApiV3PoolInfoStandardItem | ApiV3PoolInfoStandardItemCpmm
+  pool?: PoolInfo
   isLoading: boolean
   poolNotFound: boolean
-  tokenPair: { base?: ApiV3Token; quote?: ApiV3Token }
-  rpcData?: RpcAmmPool | RpcCpmmPool
+  tokenPair: { base?: TokenInfo; quote?: TokenInfo }
+  rpcData?: any // Replace with the appropriate custom type for RPC data
   mutate: () => void
   onRefresh: () => void
-  onSelectToken: (token: TokenInfo | ApiV3Token, side: 'base' | 'quote') => void
+  onSelectToken: (token: TokenInfo, side: 'base' | 'quote') => void
 }) {
   const { t } = useTranslation()
   const [addLiquidityAct, computePairAmount, addCpmmLiquidityAct] = useLiquidityStore(
@@ -52,7 +67,6 @@ export default function AddLiquidity({
   const epochInfo = useAppStore((s) => s.epochInfo)
   useRefreshEpochInfo()
 
-  // const { isOpen: isOpenAutoSwapModal, onOpen: onOpenAutoSwapModal, onClose: onCloseAutoSwapModal } = useDisclosure()
   const { isOpen: isStakeLpOpen, onOpen: onOpenStakeLp, onClose: onCloseStakeLp } = useDisclosure()
   const { isOpen: isReverse, onToggle: onToggleReverse } = useDisclosure()
 
@@ -66,9 +80,8 @@ export default function AddLiquidity({
 
   const [computeFlag, setComputeFlag] = useState(Date.now())
   const [isTxSending, setIsTxSending] = useState(false)
-  // const [autoSwap, setAutoSwap] = useState(true)
   const [pairAmount, setPairAmount] = useState<{ base: string; quote: string }>({ base: '', quote: '' })
-  const computeAmountRef = useRef<{ base: string; quote: string; minAnother: string }>({ base: '', quote: '', minAnother: '' })
+  const computeAmountRef = useRef<{ base: string; quote: string }>({ base: '', quote: '' })
   const computedLpRef = useRef(new Decimal(0))
   const focusRef = useRef<'base' | 'quote'>('base')
 
@@ -80,13 +93,13 @@ export default function AddLiquidity({
     const updateSide = isBase ? 'quote' : 'base'
     if (computeAmountRef.current[focusRef.current] === '' || poolNotFound) {
       setPairAmount((prev) => {
-        computeAmountRef.current = { ...prev, [updateSide]: '', minAnother: '' }
+        computeAmountRef.current = { ...prev, [updateSide]: '' }
         return { ...prev, [updateSide]: '' }
       })
       return
     }
 
-    const rpcLpAmount = (rpcData as RpcCpmmPool)?.lpAmount ?? (rpcData as RpcAmmPool)?.lpSupply
+    const rpcLpAmount = rpcData?.lpAmount ?? rpcData?.lpSupply
     computePairAmount({
       pool: {
         ...pool,
@@ -98,7 +111,6 @@ export default function AddLiquidity({
       baseIn: isBase
     }).then((r) => {
       computeAmountRef.current[updateSide] = new Decimal(r.maxOutput).toFixed()
-      computeAmountRef.current.minAnother = new Decimal(r.minOutput).toFixed()
       computedLpRef.current = new Decimal(r.liquidity.toString())
       setPairAmount((prev) => ({
         ...prev,
@@ -146,9 +158,7 @@ export default function AddLiquidity({
       ? {
           key: 'error.insufficient_sub_balance',
           props: {
-            token: isBalanceAEnough
-              ? getMintSymbol({ mint: tokenPair.quote!, transformSol: true })
-              : getMintSymbol({ mint: tokenPair.base!, transformSol: true })
+            token: isBalanceAEnough ? getTokenSymbol(tokenPair.quote!) : getTokenSymbol(tokenPair.base!)
           }
         }
       : undefined)
@@ -174,7 +184,7 @@ export default function AddLiquidity({
     const callBacks = {
       onSent: () => {
         setPairAmount({ base: '', quote: '' })
-        computeAmountRef.current = { base: '', quote: '', minAnother: '' }
+        computeAmountRef.current = { base: '', quote: '' }
       },
       onConfirmed: () => {
         if (pool.farmOngoingCount > 0) onOpenStakeLp()
@@ -182,25 +192,12 @@ export default function AddLiquidity({
       onFinally: () => setIsTxSending(false)
     }
 
-    const isCpmm = pool.programId === useAppStore.getState().programIdConfig.CREATE_CPMM_POOL_PROGRAM.toBase58()
     const baseIn = focusRef.current === 'base'
 
-    if (isCpmm) {
-      addCpmmLiquidityAct({
-        poolInfo: pool as ApiV3PoolInfoStandardItemCpmm,
-        inputAmount: baseIn ? computeAmountRef.current.base : computeAmountRef.current.quote,
-        anotherAmount: baseIn ? computeAmountRef.current.quote : computeAmountRef.current.base,
-        liquidity: computedLpRef.current.toString(),
-        baseIn,
-        ...callBacks
-      })
-      return
-    }
     addLiquidityAct({
-      poolInfo: pool as ApiV3PoolInfoStandardItem,
+      poolInfo: pool,
       amountA: computeAmountRef.current.base,
       amountB: computeAmountRef.current.quote,
-      otherAmountMin: computeAmountRef.current.minAnother,
       fixedSide: baseIn ? 'a' : 'b',
       ...callBacks
     })
@@ -208,28 +205,6 @@ export default function AddLiquidity({
 
   return (
     <Flex direction="column" w="full" px="24px" py="40px" bg={colors.backgroundLight}>
-      {/* modal */}
-      {/* <AutoSwapModal
-        isOpen={isOpenAutoSwapModal}
-        autoSwap={autoSwap}
-        onClose={onCloseAutoSwapModal}
-        onConfirm={() => {
-          setAutoSwap((p) => !p)
-          onCloseAutoSwapModal()
-        }}
-      /> */}
-      {/* header */}
-      {/* TODO: currently auto-swap can't enabled */}
-      {/* <Flex w="full" flexGrow={1} justify="space-between">
-        <HStack spacing={2}>
-          <Text color={colors.textTertiary}>{t('liquidity.auto_swap')}</Text>
-          <Box onClick={onOpenAutoSwapModal}>
-            <Switch isChecked={autoSwap} />
-            <Switch isChecked={false} disabled />
-          </Box>
-          <QuestionToolTip label={<Box>{t('liquidity.auto_swap_hint')}</Box>} iconProps={{ color: colors.textTertiary }} />
-        </HStack>
-      </Flex> */}
       {/* base token */}
       <Flex mt={5} justify="center" align="center" w={InputWidth} h="118px" borderRadius="12px">
         <TokenInput
@@ -284,12 +259,12 @@ export default function AddLiquidity({
         <HStack fontSize="sm" color={colors.textSecondary} spacing="6px">
           <Text>
             {pool
-              ? `1 ${wSolToSolString(pool[isReverse ? 'mintB' : 'mintA'].symbol)} ≈ ${formatCurrency(
+              ? `1 ${convertWsolToSolString(pool[isReverse ? 'mintB' : 'mintA'].symbol)} ≈ ${formatCurrency(
                   new Decimal((isReverse ? rpcMintAmountA! : rpcMintAmountB!) / (isReverse ? rpcMintAmountB! : rpcMintAmountA!)).toFixed(
                     Math.max(pool[isReverse ? 'mintA' : 'mintB'].decimals, 6),
                     Decimal.ROUND_UP
                   )
-                )} ${wSolToSolString(pool[isReverse ? 'mintA' : 'mintB'].symbol)}`
+                )} ${convertWsolToSolString(pool[isReverse ? 'mintA' : 'mintB'].symbol)}`
               : '-'}
           </Text>
           <HorizontalSwitchSmallIcon cursor="pointer" onClick={onToggleReverse} />

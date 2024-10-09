@@ -112,9 +112,7 @@ export default function UnStakeLiquidity({
     }
     removeLiquidityAct({
       poolInfo: poolInfo as FormattedPoolInfoStandardItem,
-      lpAmount: removeAmount.mul(10 ** poolInfo.lpMint.decimals).toFixed(0),
-      amountA: withdrawAmountA.toString(),
-      amountB: withdrawAmountB.toString(),
+      amount: removeAmount.mul(10 ** poolInfo.lpMint.decimals).toFixed(0),
       ...callBacks
     })
   }

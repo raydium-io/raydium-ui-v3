@@ -17,6 +17,10 @@ import '@/components/LandingPage/liquidity.css'
 import 'react-day-picker/dist/style.css'
 import { GoogleAnalytics } from '@next/third-parties/google'
 
+// pages/_app.js or _app.tsx
+import { ChakraProvider } from '@chakra-ui/react'
+import { theme } from '@/theme'
+
 const DynamicProviders = dynamic(() => import('@/provider').then((mod) => mod.Providers))
 const DynamicContent = dynamic(() => import('@/components/Content'))
 const DynamicAppNavLayout = dynamic(() => import('@/components/AppLayout/AppNavLayout'))
@@ -61,18 +65,20 @@ const MyApp = ({ Component, pageProps, lng, breakPoints, ...props }: AppProps & 
         <title>{pageProps?.title ? `${pageProps.title} Raydium` : 'Raydium'}</title>
       </Head>
       <DynamicProviders>
-        <MatchBreakpointsContext.Provider value={breakPoints}>
-          <DynamicContent {...props}>
-            {onlyContent ? (
-              <Component {...pageProps} />
-            ) : (
-              <DynamicAppNavLayout overflowHidden={overflowHidden}>
+        <ChakraProvider theme={theme}>
+          <MatchBreakpointsContext.Provider value={breakPoints}>
+            <DynamicContent {...props}>
+              {onlyContent ? (
                 <Component {...pageProps} />
-              </DynamicAppNavLayout>
-            )}
-          </DynamicContent>
-        </MatchBreakpointsContext.Provider>
-        ;
+              ) : (
+                <DynamicAppNavLayout overflowHidden={overflowHidden}>
+                  <Component {...pageProps} />
+                </DynamicAppNavLayout>
+              )}
+            </DynamicContent>
+          </MatchBreakpointsContext.Provider>
+          ;
+        </ChakraProvider>
       </DynamicProviders>
     </>
   )

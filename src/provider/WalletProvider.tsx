@@ -20,7 +20,8 @@ import {
   Coin98WalletAdapter,
   SafePalWalletAdapter,
   BitpieWalletAdapter,
-  BitgetWalletAdapter
+  BitgetWalletAdapter,
+  SalmonWalletAdapter
 } from '@solana/wallet-adapter-wallets'
 import { useAppStore, defaultNetWork, defaultEndpoint } from '../store/useAppStore'
 import { registerMoonGateWallet } from '@moongate/moongate-adapter'
@@ -35,11 +36,11 @@ import { LedgerWalletAdapter } from './Ledger/LedgerWalletAdapter'
 initialize()
 
 const App: FC<PropsWithChildren<any>> = ({ children }) => {
-  const [network] = useState<WalletAdapterNetwork>(defaultNetWork)
-  const rpcNodeUrl = useAppStore((s) => s.rpcNodeUrl)
-  const wsNodeUrl = useAppStore((s) => s.wsNodeUrl)
-  // const [endpoint] = useState<string>(defaultEndpoint)
-  const [endpoint, setEndpoint] = useState<string>(rpcNodeUrl || defaultEndpoint)
+  // const [network] = useState<WalletAdapterNetwork>(defaultNetWork)
+  // const rpcNodeUrl = useAppStore((s) => s.rpcNodeUrl)
+  // const wsNodeUrl = useAppStore((s) => s.wsNodeUrl)
+  // // const [endpoint] = useState<string>(defaultEndpoint)
+  // const [endpoint, setEndpoint] = useState<string>(defaultEndpoint)
 
   registerMoonGateWallet({
     authMode: 'Ethereum',
@@ -66,74 +67,80 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
     // buttonLogoUri: 'ADD OPTIONAL LOGO FOR WIDGET BUTTON HERE'
   })
 
-  const _walletConnect = useMemo(() => {
-    const connectWallet: WalletConnectWalletAdapter[] = []
-    try {
-      connectWallet.push(
-        new WalletConnectWalletAdapter({
-          network: network as WalletAdapterNetwork.Mainnet,
-          options: {
-            projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PJ_ID,
-            metadata: {
-              name: 'Raydium',
-              description: 'Raydium',
-              url: 'https://raydium.io/',
-              icons: ['https://raydium.io/logo/logo-only-icon.svg']
-            }
-          }
-        })
-      )
-    } catch (e) {
-      // console.error('WalletConnect error', e)
-    }
-    return connectWallet
-  }, [network])
+  // const _walletConnect = useMemo(() => {
+  //   const connectWallet: WalletConnectWalletAdapter[] = []
+  //   try {
+  //     connectWallet.push(
+  //       new WalletConnectWalletAdapter({
+  //         network: network as WalletAdapterNetwork.Mainnet,
+  //         options: {
+  //           projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PJ_ID,
+  //           metadata: {
+  //             name: 'Raydium',
+  //             description: 'Raydium',
+  //             url: 'https://raydium.io/',
+  //             icons: ['https://raydium.io/logo/logo-only-icon.svg']
+  //           }
+  //         }
+  //       })
+  //     )
+  //   } catch (e) {
+  //     // console.error('WalletConnect error', e)
+  //   }
+  //   return connectWallet
+  // }, [network])
 
-  const wallets = useMemo(
-    () => [
-      new PhantomWalletAdapter(),
-      new SolflareWalletAdapter(),
-      new SlopeWalletAdapter({ endpoint }),
-      new TorusWalletAdapter(),
-      new LedgerWalletAdapter(),
-      ..._walletConnect,
-      new GlowWalletAdapter(),
-      new TrustWalletAdapter(),
-      new MathWalletAdapter({ endpoint }),
-      new TokenPocketWalletAdapter(),
-      new CoinbaseWalletAdapter({ endpoint }),
-      new SolongWalletAdapter({ endpoint }),
-      new Coin98WalletAdapter({ endpoint }),
-      new SafePalWalletAdapter({ endpoint }),
-      new BitpieWalletAdapter({ endpoint }),
-      new BitgetWalletAdapter({ endpoint }),
-      new ExodusWalletAdapter({ endpoint }),
-      new TipLinkWalletAdapter({
-        clientId: process.env.NEXT_PUBLIC_WALLET_TIP_WALLET_KEY ?? '',
-        title: 'Raydium',
-        theme: 'system'
-      }) as unknown as Adapter
-    ],
-    [network, endpoint]
-  )
+  // const wallets = useMemo(
+  //   () => [
+  //     new PhantomWalletAdapter(),
+  //     new SolflareWalletAdapter(),
+  //     new SlopeWalletAdapter({ endpoint }),
+  //     new TorusWalletAdapter(),
+  //     new LedgerWalletAdapter(),
+  //     ..._walletConnect,
+  //     new GlowWalletAdapter(),
+  //     new TrustWalletAdapter(),
+  //     new MathWalletAdapter({ endpoint }),
+  //     new TokenPocketWalletAdapter(),
+  //     new CoinbaseWalletAdapter({ endpoint }),
+  //     new SolongWalletAdapter({ endpoint }),
+  //     new Coin98WalletAdapter({ endpoint }),
+  //     new SafePalWalletAdapter({ endpoint }),
+  //     new BitpieWalletAdapter({ endpoint }),
+  //     new BitgetWalletAdapter({ endpoint }),
+  //     new ExodusWalletAdapter({ endpoint }),
+  //     new TipLinkWalletAdapter({
+  //       clientId: process.env.NEXT_PUBLIC_WALLET_TIP_WALLET_KEY ?? '',
+  //       title: 'Raydium',
+  //       theme: 'system'
+  //     }),
+  //     new SalmonWalletAdapter()
+  //   ],
+  //   [network, endpoint]
+  // )
 
-  useEffect(() => {
-    if (rpcNodeUrl) setEndpoint(rpcNodeUrl)
-  }, [rpcNodeUrl])
+  // useEffect(() => {
+  //   if (rpcNodeUrl) setEndpoint("https://testnet.dev2.eclipsenetwork.xyz")
+  // }, [rpcNodeUrl])
 
-  const onWalletError = useEvent((error: WalletError, adapter?: Adapter) => {
-    if (!adapter) return
-    sendWalletEvent({
-      type: 'connectWallet',
-      walletName: adapter.name,
-      connectStatus: 'failure',
-      errorMsg: error.message || error.stack
-    })
-  })
+  // const onWalletError = useEvent((error: WalletError, adapter?: Adapter) => {
+  //   if (!adapter) return
+  //   sendWalletEvent({
+  //     type: 'connectWallet',
+  //     walletName: adapter.name,
+  //     connectStatus: 'failure',
+  //     errorMsg: error.message || error.stack
+  //   })
+  // })
+
+  const customClusterEndpoint = "https://testnet.dev2.eclipsenetwork.xyz";
+  const endpoint = customClusterEndpoint;
+  const wallets = useMemo(() => [new SalmonWalletAdapter()], []);
+
 
   return (
-    <ConnectionProvider endpoint={endpoint} config={{ disableRetryOnRateLimit: true, wsEndpoint: wsNodeUrl }}>
-      <WalletProvider wallets={wallets} onError={onWalletError} autoConnect>
+    <ConnectionProvider endpoint={endpoint} >
+      <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>{children}</WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>

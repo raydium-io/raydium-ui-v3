@@ -40,6 +40,7 @@ import { PriorityButton } from './components/PriorityButton'
 import DisclaimerModal from './components/DisclaimerModal'
 import { keyframes } from '@emotion/react'
 import AppVersion from './AppVersion'
+import Image from 'next/image'
 
 export interface NavSettings {
   // colorTheme: 'dark' | 'light'
@@ -76,7 +77,7 @@ function AppNavLayout({
 `
   return (
     <Flex direction="column" id="app-layout" height="full" overflow={overflowHidden ? 'hidden' : 'auto'}>
-      <Box
+      {/* <Box
         className="beta_tooltip"
         ref={betaTooltipRef}
         display={isOpen ? 'flex' : 'none'}
@@ -104,7 +105,7 @@ function AppNavLayout({
         >
           ×
         </Box>
-      </Box>
+      </Box> */}
       <HStack
         className="navbar"
         flex="none"
@@ -118,7 +119,13 @@ function AppNavLayout({
         <Desktop>
           <Box flex={'none'}>
             <Link href="/swap">
-              <RaydiumLogo />
+              {/* <RaydiumLogo /> */}
+              <Image
+                src="/logo3.png" // Path to your image in the public folder
+                alt="logo"
+                width={70} // Set the width of the image
+                height={70} // Set the height of the image
+              />
             </Link>
           </Box>
         </Desktop>
@@ -176,8 +183,8 @@ function AppNavLayout({
 
         {/* wallet button */}
         <Flex gap={[0.5, 2]} align="center">
-          <PriorityButton />
-          <SettingsMenu />
+          {/* <PriorityButton /> */}
+          {/* <SettingsMenu /> */}
           {/* <EVMWallet />  don't need currently yet*/}
           <SolWallet />
         </Flex>

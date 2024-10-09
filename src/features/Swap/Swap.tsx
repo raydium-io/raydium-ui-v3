@@ -1,5 +1,4 @@
 import { Box, Grid, GridItem, HStack, VStack, useClipboard } from '@chakra-ui/react'
-import { RAYMint, SOLMint } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import { useMemo, useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -27,8 +26,13 @@ import { MoonpayBuy } from '@/components/Moonpay'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import useResponsive from '@/hooks/useResponsive'
 
+import { Heading } from '@chakra-ui/react'
+
+// Custom equivalents for RAYMint and SOLMint
+const RAYMint = new PublicKey('4k3Dyjzvzp8eMKahLg5ojXkTQuoXz5z5RUP3gRSRk8Rg') // Replace with actual mint address for RAY
+const SOLMint = new PublicKey('So11111111111111111111111111111111111111112') // Solana native mint address
+
 export default function Swap() {
-  // const { inputMint: cacheInput, outputMint: cacheOutput } = getSwapPairCache()
   const [inputMint, setInputMint] = useState<string>(PublicKey.default.toBase58())
   const [outputMint, setOutputMint] = useState<string>(RAYMint.toBase58())
   const [isPCChartShown, setIsPCChartShown] = useState<boolean>(true)
@@ -61,15 +65,15 @@ export default function Swap() {
     if (cacheOutput && cacheOutput !== cacheInput) setOutputMint(cacheOutput)
     setCacheLoaded(true)
   }, [])
+
   useEffect(() => {
-    // preserve swap chart default direction on page refresh by mint priority
     if (cacheLoaded) {
       if (getMintPriority(baseMint) > getMintPriority(quoteMint)) {
         setDirectionReverse(true)
       }
     }
   }, [cacheLoaded])
-  // reset directionReverse when inputMint or outputMint changed
+
   useIsomorphicLayoutEffect(() => {
     if (!cacheLoaded) return
     if (isDirectionNeedReverse) {
@@ -94,7 +98,6 @@ export default function Swap() {
   }, [])
 
   useEffect(() => {
-    // inputMint === solMintAddress || outputMint === solMintAddress ? setIsBlinkReferralActive(true) : setIsBlinkReferralActive(false)
     setIsBlinkReferralActive(true)
     const def = PublicKey.default.toString()
     const _inputMint = inputMint === def ? 'sol' : inputMint
@@ -111,6 +114,27 @@ export default function Swap() {
       mt={[0, getVHExpression([0, 800], [32, 1300])]}
       width={!isMobile && isPCChartShown ? 'min(100%, 1300px)' : undefined}
     >
+      <Heading
+        as="h1"
+        fontSize="6xl"
+        fontWeight="extrabold"
+        bgGradient="linear(to-r, cyan.300, pink.400)"
+        bgClip="text"
+        textColor="transparent"
+      >
+        TurboSwap <br />
+      </Heading>
+      <Heading
+        as="h3"
+        fontSize="3xl"
+        fontWeight="extrabold"
+        bgGradient="linear(to-r, cyan.400, pink.500)"
+        bgClip="text"
+        textColor="transparent"
+      >
+        Lightning Fast DEX on Eclipse Network
+      </Heading>
+
       <HStack alignSelf="flex-end" my={[1, 0]}>
         <SlippageAdjuster />
         <Tooltip
@@ -208,13 +232,7 @@ export default function Swap() {
               }}
               height="100%"
             >
-              <SwapKlinePanelMobileThumbnail
-                untilDate={untilDate.current}
-                baseToken={baseToken}
-                quoteToken={quoteToken}
-                // onDirectionToggle={() => setDirectionReverse((b) => !b)}
-                // onTimeTypeChange={setSelectedTimeType}
-              />
+              <SwapKlinePanelMobileThumbnail untilDate={untilDate.current} baseToken={baseToken} quoteToken={quoteToken} />
               <SwapKlinePanelMobileDrawer
                 untilDate={untilDate.current}
                 isOpen={isMobileChartShown}

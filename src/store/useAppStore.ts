@@ -22,8 +22,8 @@ import { setStorageItem, getStorageItem } from '@/utils/localStorage'
 import { retry, isProdEnv } from '@/utils/common'
 import { compare } from 'compare-versions'
 
-export const defaultNetWork = WalletAdapterNetwork.Mainnet // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
-export const defaultEndpoint = clusterApiUrl(defaultNetWork) // You can also provide a custom RPC endpoint
+export const defaultNetWork = WalletAdapterNetwork.Testnet // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
+export const defaultEndpoint = "https://testnet.dev2.eclipsenetwork.xyz" // You can also provide a custom RPC endpoint
 export const APR_MODE_KEY = '_r_apr_'
 export const EXPLORER_KEY = '_r_explorer_'
 export const supportedExplorers = [

@@ -4,7 +4,6 @@ import shallow from 'zustand/shallow'
 import FocusTrap from 'focus-trap-react'
 import { usePopper } from 'react-popper'
 import { useTranslation } from 'react-i18next'
-import { PublicKey } from '@solana/web3.js'
 import {
   ApiV3Token,
   RAYMint,
@@ -36,12 +35,18 @@ import useFetchPoolByMint from '@/hooks/pool/useFetchPoolByMint'
 import CreateSuccessModal from './CreateSuccessModal'
 import useInitPoolSchema from '../hooks/useInitPoolSchema'
 import useBirdeyeTokenPrice from '@/hooks/token/useBirdeyeTokenPrice'
+import { useWallet } from '@solana/wallet-adapter-react';
+import { IDL } from '@/idl/raydium_cp_swap';
+import { Connection, PublicKey, SystemProgram } from '@solana/web3.js';
+import { Program, AnchorProvider, BN, utils } from '@project-serum/anchor';
+import { getAmmConfigAddress } from '@/utils/pda'
 
 import Decimal from 'decimal.js'
 import dayjs from 'dayjs'
 
 export default function Initialize() {
   const { t } = useTranslation()
+  const wallet = useWallet();
   const tokenMap = useTokenStore((s) => s.tokenMap)
   const [inputMint, setInputMint] = useState<string>(PublicKey.default.toBase58())
   const [outputMint, setOutputMint] = useState<string>(RAYMint.toBase58())
@@ -115,17 +120,17 @@ export default function Initialize() {
     new Decimal(tokenAmount.base || 0).lte(0) || new Decimal(tokenAmount.quote || 0).lte(0)
       ? ''
       : new Decimal(tokenAmount[baseIn ? 'quote' : 'base'] || 0)
-          .div(tokenAmount[baseIn ? 'base' : 'quote'] || 1)
-          .toDecimalPlaces(baseToken?.decimals ?? 6)
-          .toString()
+        .div(tokenAmount[baseIn ? 'base' : 'quote'] || 1)
+        .toDecimalPlaces(baseToken?.decimals ?? 6)
+        .toString()
 
   const currentPrice =
     !tokenPrices[inputMint] || !tokenPrices[outputMint]
       ? ''
       : new Decimal(tokenPrices[baseIn ? inputMint : outputMint].value || 0)
-          .div(tokenPrices[baseIn ? outputMint : inputMint].value || 1)
-          .toDecimalPlaces(baseToken?.decimals ?? 6)
-          .toString()
+        .div(tokenPrices[baseIn ? outputMint : inputMint].value || 1)
+        .toDecimalPlaces(baseToken?.decimals ?? 6)
+        .toString()
 
   const error = useInitPoolSchema({ baseToken, quoteToken, tokenAmount, startTime: startDate, feeConfig: currentConfig })
 
@@ -145,20 +150,66 @@ export default function Initialize() {
     [inputMint, outputMint]
   )
 
-  const onInitializeClick = () => {
+  const anchorWallet = useMemo(() => {
+    if (!wallet.publicKey || !wallet.signTransaction || !wallet.signAllTransactions) return null;
+    return {
+      publicKey: wallet.publicKey,
+      signTransaction: wallet.signTransaction.bind(wallet),
+      signAllTransactions: wallet.signAllTransactions.bind(wallet),
+    };
+  }, [wallet]);
+
+  const onInitializeClick = async () => {
     onLoading()
-    createPoolAct({
-      pool: {
-        mintA: solToWSolToken(baseToken!),
-        mintB: solToWSolToken(quoteToken!),
-        feeConfig: currentConfig!
-      },
-      baseAmount: new Decimal(tokenAmount.base).mul(10 ** baseToken!.decimals).toFixed(0),
-      quoteAmount: new Decimal(tokenAmount.quote).mul(10 ** quoteToken!.decimals).toFixed(0),
-      startTime: startDate,
-      onError: onTxError,
-      onFinally: offLoading
-    })
+
+    if (!anchorWallet) return;
+    const connection = new Connection("https://testnet.dev2.eclipsenetwork.xyz", 'confirmed');
+    const provider = new AnchorProvider(connection, anchorWallet, AnchorProvider.defaultOptions());
+    const programId = new PublicKey('8PzREVMxRooeR2wbihZdp2DDTQMZkX9MVzfa8ZV615KW');
+    const program = new Program(IDL, programId, provider);
+
+    try {
+
+      let config_index = 0
+      let tradeFeeRate = new BN(10)
+      let protocolFeeRate = new BN(1000)
+      let fundFeeRate = new BN(25000)
+      let create_fee = new BN(0)
+
+      const [ammConfigPDA] = await getAmmConfigAddress(config_index, program.programId);
+
+      console.log(ammConfigPDA)
+
+      const tx = await program.methods.createAmmConfig(
+        config_index,
+        tradeFeeRate,
+        protocolFeeRate,
+        fundFeeRate,
+        create_fee,
+      ).accounts({
+        owner: anchorWallet.publicKey,
+        ammConfig: ammConfigPDA,
+        systemProgram: SystemProgram.programId,
+      }).rpc();
+
+      console.log("Transaction ", tx);
+
+    } catch (error) {
+      console.error("Error minting NFT:", error);
+    }
+
+    // createPoolAct({
+    //   pool: {
+    //     mintA: solToWSolToken(baseToken!),
+    //     mintB: solToWSolToken(quoteToken!),
+    //     feeConfig: currentConfig!
+    //   },
+    //   baseAmount: new Decimal(tokenAmount.base).mul(10 ** baseToken!.decimals).toFixed(0),
+    //   quoteAmount: new Decimal(tokenAmount.quote).mul(10 ** quoteToken!.decimals).toFixed(0),
+    //   startTime: startDate,
+    //   onError: onTxError,
+    //   onFinally: offLoading
+    // })
   }
 
   return (
@@ -415,7 +466,7 @@ export default function Initialize() {
         </Text>
       </Flex>
       <HStack w="full" spacing={4} mt={2}>
-        <Button w="full" isLoading={isLoading} isDisabled={!!error} onClick={onInitializeClick}>
+        <Button w="full" isLoading={isLoading} isDisabled={false} onClick={onInitializeClick}>
           {t('create_standard_pool.button_initialize_liquidity_pool')}
         </Button>
       </HStack>

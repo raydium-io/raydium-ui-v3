@@ -34,7 +34,7 @@ export function NavMoreButtonMenuPanel() {
           </Link>
         </MenuItem>
         <MenuDivider />
-        <MenuItem>
+        {/* <MenuItem>
           <Link as={NextLink} href="https://docs.raydium.io/raydium/" _hover={{ textDecoration: 'none' }} w="full" isExternal>
             <HStack>
               <DocThumbnailIcon />
@@ -51,9 +51,9 @@ export function NavMoreButtonMenuPanel() {
               <ExternalLink color={colors.textSecondary} />
             </HStack>
           </Link>
-        </MenuItem>
+        </MenuItem> */}
       </Box>
-      <Flex mb={-1} mt={1} py={2} justifyContent={'space-around'} color={colors.textSecondary} bg={colors.backgroundTransparent07}>
+      {/* <Flex mb={-1} mt={1} py={2} justifyContent={'space-around'} color={colors.textSecondary} bg={colors.backgroundTransparent07}>
         <Link as={NextLink} href="https://twitter.com/RaydiumProtocol" isExternal>
           <TwitterMediaIcon />
         </Link>
@@ -63,7 +63,7 @@ export function NavMoreButtonMenuPanel() {
         <Link as={NextLink} href="https://discord.com/invite/raydium" isExternal>
           <DiscardMediaIcon />
         </Link>
-      </Flex>
+      </Flex> */}
     </MenuList>
   )
 }

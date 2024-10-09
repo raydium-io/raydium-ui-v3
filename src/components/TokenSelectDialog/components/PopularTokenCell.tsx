@@ -19,6 +19,7 @@ export default function PopularTokenCell({
   token: TokenInfo | undefined
   onClick?: (token: TokenInfo) => void
 }) {
+  console.log(token)
   return (
     <Flex
       bg={colors.backgroundDark}
