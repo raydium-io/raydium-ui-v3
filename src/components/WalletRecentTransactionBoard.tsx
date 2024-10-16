@@ -125,16 +125,16 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
 
   const recentTransactions: RecentTransaction[] = address
     ? allRecords
-        .filter((r) => r.owner && r.owner === address)
-        .map((record) => ({
-          txId: record.txId,
-          name: (record.isMultiSig ? `(${t('transaction.multisig_wallet')}) ` : '') + t(record.title, record.txValues || {}),
-          status: record.status,
-          description: t(record.description, record.txValues || {}).replaceAll(/(<([^>]+)>)/gi, ''),
-          date: record.time,
-          relatedTokens: record.mintInfo || [],
-          sub: record.subTx
-        }))
+      .filter((r) => r.owner && r.owner === address)
+      .map((record) => ({
+        txId: record.txId,
+        name: (record.isMultiSig ? `(${t('transaction.multisig_wallet')}) ` : '') + t(record.title, record.txValues || {}),
+        status: record.status,
+        description: t(record.description, record.txValues || {}).replaceAll(/(<([^>]+)>)/gi, ''),
+        date: record.time,
+        relatedTokens: record.mintInfo || [],
+        sub: record.subTx
+      }))
     : []
 
   const normalDrawerBody = (
@@ -218,7 +218,7 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
         <DrawerBody>{isRecentTransactionDetailView ? recentTransactionDetailView : normalDrawerBody}</DrawerBody>
         <DrawerFooter bg="transparent" p={[0, 0]}>
           <VStack w="full" gap={4}>
-            <Flex justifyContent="center" alignItems="center" color={colors.lightPurple}>
+            {/* <Flex justifyContent="center" alignItems="center" color={colors.lightPurple}>
               <Text fontSize="xs">{t('wallet_connect_panel.sell_crypto')}</Text>
               <MoonpaySell>
                 <HStack gap={0}>
@@ -226,7 +226,7 @@ export default function WalletRecentTransactionBoard({ wallet, address, isOpen =
                   <ChevronRightIcon width={'16px'} height={'16px'} />
                 </HStack>
               </MoonpaySell>
-            </Flex>
+            </Flex> */}
             <Text
               w="full"
               textAlign="center"

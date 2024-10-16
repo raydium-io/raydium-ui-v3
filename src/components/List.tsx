@@ -100,7 +100,9 @@ function List<T>(
   // set this to force render all items
   const [renderCount, setRenderCount] = useState(0)
   const allListItems = useMemo(
-    () => items.slice(0, renderItemLength).map((item, idx) => <ListItem key={getItemKey(item, idx)}>{children?.(item, idx)}</ListItem>),
+    () => {
+      return items ? items.slice(0, renderItemLength).map((item, idx) => <ListItem key={getItemKey(item, idx)}>{children?.(item, idx)}</ListItem>) : ""
+    },
     [items, renderItemLength, renderCount, children]
   )
 
@@ -140,10 +142,10 @@ function List<T>(
           gridSlotItemMinWidth != null
             ? `repeat(auto-fill, minmax(${gridSlotItemMinWidth}px, 1fr))`
             : gridSlotItemWidth != null
-            ? `repeat(auto-fill, ${gridSlotItemWidth}px)`
-            : gridSlotCount != null
-            ? `repeat(${gridSlotCount}, minmax(0, 1fr))`
-            : undefined
+              ? `repeat(auto-fill, ${gridSlotItemWidth}px)`
+              : gridSlotCount != null
+                ? `repeat(${gridSlotCount}, minmax(0, 1fr))`
+                : undefined
         }
         justifyContent={gridSlotCount || gridSlotItemMinWidth || gridSlotItemWidth ? 'center' : undefined}
         overflow="overlay" // overlay is prettier

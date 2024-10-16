@@ -132,7 +132,7 @@ export const useSwapStore = createStore<SwapStore>(
 
         const swapTransactions = data || []
         const allTxBuf = swapTransactions.map((tx) => Buffer.from(tx.transaction, 'base64'))
-        const allTx = allTxBuf.map((txBuf) => (isV0Tx ? VersionedTransaction.deserialize(txBuf) : Transaction.from(txBuf)))
+        const allTx = allTxBuf.map((txBuf) => (isV0Tx ? VersionedTransaction.deserialize(new Uint8Array(txBuf)) : Transaction.from(txBuf)))
 
         const signedTxs = await signAllTransactions(allTx)
 
@@ -170,8 +170,8 @@ export const useSwapStore = createStore<SwapStore>(
           return idx === 0
             ? 'transaction_history.set_up'
             : idx === processedId.length - 1 && processedId.length > 2
-            ? 'transaction_history.clean_up'
-            : 'transaction_history.name_swap'
+              ? 'transaction_history.clean_up'
+              : 'transaction_history.name_swap'
         }
 
         let i = 0

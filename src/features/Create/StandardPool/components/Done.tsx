@@ -52,7 +52,7 @@ export default function Done() {
         <Flex justify="center" align="center" gap={1}>
           <Text fontSize="sm" color="#8C6EEF" fontWeight="medium">
             <Highlight query={'AMM ID:'} styles={{ color: colors.textSecondary, fontWeight: 'normal' }}>
-              {`AMM ID: ` + ammId ?? ''}
+              {`AMM ID: ${ammId ? ammId : ""}`}
             </Highlight>
           </Text>
           <CopyIcon onClick={onCopy} cursor="pointer" />

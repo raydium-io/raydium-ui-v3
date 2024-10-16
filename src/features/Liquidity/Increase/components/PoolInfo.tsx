@@ -184,9 +184,9 @@ function InfoRowItem({ onCopySuccess, symbol, address }: { onCopySuccess?(text: 
               hasCopied
                 ? undefined
                 : () => {
-                    onCopy()
-                    onCopySuccess?.(copyContent)
-                  }
+                  onCopy()
+                  onCopySuccess?.(copyContent)
+                }
             }
           >
             <CopyIcon fill={colors.textSecondary} />

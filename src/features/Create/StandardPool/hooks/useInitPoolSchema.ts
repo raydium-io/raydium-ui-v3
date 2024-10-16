@@ -30,7 +30,7 @@ export default function useInitPoolSchema({ startTime, baseToken, quoteToken, to
 
   const schema = (t: TFunction<'translation', undefined, 'translation'>) =>
     yup.object().shape({
-      feeConfig: yup.mixed().required(t('common.select') + t('field.fee_tier') ?? ''),
+      feeConfig: yup.mixed().required(t('common.select') + t('field.fee_tier') ? t('common.select') + t('field.fee_tier') : ''),
       startTime: yup.mixed().test('is-date-valid', t('error.start time should later than now') ?? '', function (val: Date) {
         return !val || val.valueOf() > Date.now()
       }),

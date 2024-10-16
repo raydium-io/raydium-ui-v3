@@ -1,4 +1,3 @@
-import useFetchPoolKLine, { TimeType } from '@/hooks/pool/useFetchPoolKLine'
 import { colors } from '@/theme/cssVariables/colors'
 import { AbsoluteCenter, Box, GridItem, Spinner, Text, useColorMode } from '@chakra-ui/react'
 import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
@@ -7,40 +6,42 @@ import { ColorType, CrosshairMode, IChartApi, ISeriesApi, TickMarkType, createCh
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '@/utils/numberish/formatter'
+import staticChartData from './ChartData' // Import your static chart data
+
+// Define the type for timeType
+type TimeType = '15m' | '1H' | '4H' | '1D' | '1W'
 
 interface Props {
   onPriceChange?: (val: { current: number; change: number } | undefined) => void
   baseMint?: ApiV3Token
   quoteMint?: ApiV3Token
-  timeType: TimeType
+  timeType: TimeType // Use the defined TimeType
   untilDate?: number
 }
 
 export default function CandleChart({ onPriceChange, baseMint, quoteMint, timeType, untilDate }: Props) {
   const { colorMode } = useColorMode()
-
   const { t } = useTranslation()
   const chartCtrRef = useRef<HTMLDivElement>(null)
-  const timeTypeRef = useRef<TimeType>(timeType)
   const chartRef = useRef<{ chart?: IChartApi; candle?: ISeriesApi<'Candlestick'>; volume?: ISeriesApi<'Histogram'> }>({})
-  const pair = baseMint && quoteMint ? `${baseMint?.address}-${quoteMint?.address}` : undefined
-  timeTypeRef.current = timeType
 
-  const { data, currentPrice, change24H, isLoading, isEmptyResult, loadMore } = useFetchPoolKLine({
-    base: baseMint?.address,
-    quote: quoteMint?.address,
-    timeType,
-    untilDate
-  })
+  // Use static data based on the selected time type
+  const data = staticChartData[timeType] || []
+  const currentPrice = data[data.length - 1]?.close
+  const change24H = data.length > 1 ? ((currentPrice - data[data.length - 2].close) / data[data.length - 2].close) * 100 : 0
+  const isLoading = false // No loading state needed
+  const isEmptyResult = data.length === 0
 
   useEffect(() => {
-    if (!pair) return
+    if (!chartCtrRef.current) return
+
     const chartTextColor = colorMode === 'light' ? '#474ABB' : '#ABC4FF'
     const axisColor = '#ecf5ff1a'
     const volumeColor = colorMode === 'light' ? '#7191FF4d' : '#7081943e'
     const upColor = '#22D1F8'
     const downColor = '#ff4ea3'
     const crosshairColor = colorMode === 'light' ? '#474ABB' : '#ABC4FF'
+
     const chart = createChart(chartCtrRef.current!, {
       layout: { textColor: chartTextColor, background: { type: ColorType.Solid, color: 'transparent' }, fontFamily: 'Space Grotesk' },
       grid: { vertLines: { color: 'transparent' }, horzLines: { color: 'transparent' } },
@@ -62,11 +63,6 @@ export default function CandleChart({ onPriceChange, baseMint, quoteMint, timeTy
             .utc()
             .format('H:mm')
         }
-      },
-      localization: {
-        // timeFormatter: (time: number) => {
-        //   return dayjs(time).utc().format('H:mm')
-        // }
       }
     })
 
@@ -88,7 +84,6 @@ export default function CandleChart({ onPriceChange, baseMint, quoteMint, timeTy
 
     candlestickSeries.priceScale().applyOptions({
       scaleMargins: {
-        // positioning the price scale for the area series
         top: 0.1,
         bottom: 0.1
       }
@@ -99,10 +94,9 @@ export default function CandleChart({ onPriceChange, baseMint, quoteMint, timeTy
       priceFormat: {
         type: 'volume'
       },
-      priceScaleId: '', // set as an overlay by setting a blank priceScaleId
+      priceScaleId: '',
       lastValueVisible: false,
       priceLineVisible: false
-      // // set the positioning of the volume series
     })
 
     volumeSeries.priceScale().applyOptions({
@@ -112,60 +106,33 @@ export default function CandleChart({ onPriceChange, baseMint, quoteMint, timeTy
       }
     })
 
-    chart.timeScale().applyOptions({
-      timeVisible: true
-    })
-
-    // to prevent load next page in immediately next mount
-    setTimeout(() => {
-      chart.timeScale().subscribeVisibleLogicalRangeChange((newVisiableLogicalRange) => {
-        const { from } = newVisiableLogicalRange ?? {}
-        const leftBoundaryIsReached = from ? from < 50 /* margin  */ : false
-        if (leftBoundaryIsReached) {
-          loadMore()
-        }
-      })
-    }, 100)
+    // Load static data into the chart
+    // candlestickSeries.setData(data)
+    candlestickSeries.setData([])
+    volumeSeries.setData(
+      data.map((item: any) => ({
+        time: item.time,
+        value: item.volume
+      }))
+    )
 
     chartRef.current.chart = chart
     chartRef.current.candle = candlestickSeries
     chartRef.current.volume = volumeSeries
+
     return () => {
       chart.remove()
       chartRef.current = {}
     }
-  }, [loadMore, pair])
-
-  useEffect(() => {
-    if (!chartRef.current.chart) return
-    chartRef.current.candle?.setData(data)
-    chartRef.current.volume?.setData(data)
-  }, [data, timeType, pair])
-
-  useEffect(() => {
-    chartRef.current.chart?.timeScale().resetTimeScale()
-  }, [timeType])
-
-  useEffect(() => {
-    const chartTextColor = colorMode === 'light' ? '#474ABB' : '#ABC4FF'
-    const volumeColor = colorMode === 'light' ? '#7191FF4d' : '#7081943e'
-    const crosshairColor = colorMode === 'light' ? '#474ABB' : '#ABC4FF'
-    chartRef.current.chart?.applyOptions({
-      layout: { textColor: chartTextColor },
-      crosshair: { vertLine: { color: crosshairColor }, horzLine: { color: crosshairColor } }
-    })
-    chartRef.current.volume?.applyOptions({
-      color: volumeColor
-    })
-  }, [colorMode])
+  }, [data, colorMode])
 
   useEffect(() => {
     onPriceChange?.(
       currentPrice != null
         ? {
-            current: currentPrice,
-            change: change24H || 0
-          }
+          current: currentPrice,
+          change: change24H || 0
+        }
         : undefined
     )
   }, [onPriceChange, currentPrice, change24H])

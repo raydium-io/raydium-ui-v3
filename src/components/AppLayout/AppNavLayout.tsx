@@ -121,7 +121,7 @@ function AppNavLayout({
             <Link href="/swap">
               {/* <RaydiumLogo /> */}
               <Image
-                src="/logo3.png" // Path to your image in the public folder
+                src="/images/logo3.png" // Path to your image in the public folder
                 alt="logo"
                 width={70} // Set the width of the image
                 height={70} // Set the height of the image
@@ -136,16 +136,16 @@ function AppNavLayout({
               {pathname === '/swap'
                 ? t('swap.title')
                 : pathname === '/liquidity-pools'
-                ? t('liquidity.title')
-                : pathname === '/portfolio'
-                ? t('portfolio.title')
-                : pathname === '/playground'
-                ? t('common.playground')
-                : pathname === '/staking'
-                ? t('staking.title')
-                : pathname === '/bridge'
-                ? t('bridge.title')
-                : ''}
+                  ? t('liquidity.title')
+                  : pathname === '/portfolio'
+                    ? t('portfolio.title')
+                    : pathname === '/playground'
+                      ? t('common.playground')
+                      : pathname === '/staking'
+                        ? t('staking.title')
+                        : pathname === '/bridge'
+                          ? t('bridge.title')
+                          : ''}
             </Text>
           </HStack>
         </Mobile>
@@ -209,7 +209,7 @@ function AppNavLayout({
       >
         {children}
       </Box>
-      <DisclaimerModal />
+      {/* <DisclaimerModal /> */}
       <Mobile>
         <Box className="mobile_bottom_navbar" flex="none">
           <MobileBottomNavbar />
@@ -291,9 +291,8 @@ function SettingsMenuModalContent(props: { isOpen: boolean; triggerRef: React.Re
             const triggerRect = getTriggerRect()
             return (
               triggerRect
-                ? `translate(${isMobile ? 0 : -(window.innerWidth - triggerRect.right)}px, ${
-                    triggerRect.bottom + triggerPanelGap
-                  }px) !important`
+                ? `translate(${isMobile ? 0 : -(window.innerWidth - triggerRect.right)}px, ${triggerRect.bottom + triggerPanelGap
+                }px) !important`
                 : undefined
             ) as string | undefined
           })()

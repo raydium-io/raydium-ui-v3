@@ -23,6 +23,7 @@ import PoolInfo from './components/PoolInfo'
 import PositionBalance from './components/PositionBalance'
 import StakeableHint from './components/StakeableHint'
 import useFetchFarmByLpMint from '@/hooks/farm/useFetchFarmByLpMint'
+import axios from 'axios'
 
 export type IncreaseLiquidityPageQuery = {
   pool_id?: string
@@ -50,6 +51,8 @@ export default function Increase() {
   const { lpBasedData } = useFarmPositions({})
 
   const [tokenPair, setTokenPair] = useState<{ base?: ApiV3Token; quote?: ApiV3Token }>({})
+
+  const [pool1, setPool1] = useState<any>(undefined);
 
   const { formattedData, isLoading, mutate } = useFetchPoolById<ApiV3PoolInfoStandardItem>({
     shouldFetch: Boolean(urlPoolId),
@@ -100,7 +103,7 @@ export default function Increase() {
     fetchTokenAccountAct({})
   })
 
-  const handleSelectToken = useCallback((token: TokenInfo | ApiV3Token, side: 'base' | 'quote') => {
+  const handleSelectToken = useCallback((token: any, side: 'base' | 'quote') => {
     setTokenPair((pair) => {
       const anotherSide = side === 'base' ? 'quote' : 'base'
 
@@ -110,6 +113,48 @@ export default function Increase() {
       }
     })
   }, [])
+
+  const fetchPoolInfo = async () => {
+    const serverData = await axios.get(`http://62.3.6.226:8080/epsapi/getOnePoolInfo?id=${urlPoolId}`);
+    const poolInfo = serverData.data.poolInfo;
+    setPool1({
+      mintA: {
+        "chainId": parseInt(poolInfo[0].minta.split(",")[0]),
+        "address": poolInfo[0].minta.split(",")[1],
+        "programId": poolInfo[0].minta.split(",")[2],
+        "logoURI": poolInfo[0].minta.split(",")[3],
+        "symbol": poolInfo[0].minta.split(",")[4],
+        "name": poolInfo[0].minta.split(",")[5],
+        "decimals": parseInt(poolInfo[0].minta.split(",")[6]),
+        "tags": [],
+        "extensions": {}
+      },
+      mintB: {
+        "chainId": parseInt(poolInfo[0].mintb.split(",")[0]),
+        "address": poolInfo[0].mintb.split(",")[1],
+        "programId": poolInfo[0].mintb.split(",")[2],
+        "logoURI": poolInfo[0].mintb.split(",")[3],
+        "symbol": poolInfo[0].mintb.split(",")[4],
+        "name": poolInfo[0].mintb.split(",")[5],
+        "decimals": parseInt(poolInfo[0].mintb.split(",")[6]),
+        "tags": [],
+        "extensions": {}
+      },
+      mintAmountA: poolInfo[0].amountA, // Pooled token1
+      mintAmountB: poolInfo[0].amountB, // Pooled token2
+      lpAmount: poolInfo[0].lpAmount,
+      lpPrice: poolInfo[0].lpPrice,
+      lpMint: { decimals: poolInfo[0].lpMint }, // LP mint
+      farmOngoingCount: poolInfo[0].farmOngoingCount,
+      programId: poolInfo[0].programId,
+      fees: "0", // poolInfo[0].fees,
+      poolId: urlPoolId // AMM ID
+    })
+  }
+
+  useEffect(() => {
+    fetchPoolInfo();
+  }, [urlPoolId])
 
   useEffect(() => {
     if (!urlMode) {
@@ -128,12 +173,12 @@ export default function Increase() {
 
   /** set default token pair onMount */
   useEffect(() => {
-    if (!pool) return
+    if (!pool1) return
     setTokenPair({
-      base: wsolToSolToken(pool.mintA),
-      quote: wsolToSolToken(pool.mintB)
+      base: pool1.mintA,
+      quote: pool1.mintB
     })
-  }, [pool])
+  }, [pool1])
 
   useEffect(() => {
     if (!urlPoolId) setUrlQuery({ pool_id: 'AVs9TA4nWDzfPJE9gGVNJMVhcQy3V9PGazuz33BfG2RA' })
@@ -169,9 +214,9 @@ export default function Increase() {
             {!increaseTabOptions[1].disabled && !lpBalance.isZero ? <StakeableHint /> : undefined}
             <Box {...panelCard} bg={colors.backgroundLight30} borderRadius="20px" overflow="hidden" w="full">
               <Tabs isFitted items={tabOptions} size="md" variant="folder" value={tabValue} onChange={handleTabChange} />
-              {mode === 'add' ? (
+              {mode === 'add' && pool1 && tokenPair.base && tokenPair.quote ? (
                 <AddLiquidity
-                  pool={pool}
+                  pool={pool1}
                   isLoading={isLoading}
                   poolNotFound={isPoolNotFound}
                   rpcData={rpcData}
@@ -190,18 +235,10 @@ export default function Increase() {
           </VStack>
         </GridItem>
         {/* right */}
-        <GridItem>
+        {/* <GridItem>
           <VStack maxW={['revert', '400px']} justify="flex-start" align="stretch" spacing={4}>
             <PoolInfo
-              pool={
-                pool && rpcData
-                  ? {
-                      ...pool,
-                      mintAmountA: new Decimal(rpcData.baseReserve.toString()).div(10 ** pool.mintA.decimals).toNumber(),
-                      mintAmountB: new Decimal(rpcData.quoteReserve.toString()).div(10 ** pool.mintB.decimals).toNumber()
-                    }
-                  : pool
-              }
+              pool={pool}
             />
             <PositionBalance
               myPosition={Number(lpBalance.amount.mul(pool?.lpPrice ?? 0).toFixed(pool?.lpMint.decimals ?? 6))}
@@ -209,7 +246,7 @@ export default function Increase() {
               unstaked={lpBalance.isZero ? '--' : lpBalance.text}
             />
           </VStack>
-        </GridItem>
+        </GridItem> */}
       </Grid>
     </>
   )

@@ -55,7 +55,7 @@ export default function CreatePool() {
         </Flex>
       </GridItem>
 
-      <GridItem area="note">
+      {/* <GridItem area="note">
         <Box w={['unset', 'clamp(300px, 100%, 500px)']}>
           <SubPageNote
             title={t('create_standard_pool.please_note')}
@@ -73,7 +73,7 @@ export default function CreatePool() {
             }
           />
         </Box>
-      </GridItem>
+      </GridItem> */}
 
       <GridItem area="word" display={['none', 'unset']}>
         <Flex justify="left">

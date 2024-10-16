@@ -66,7 +66,7 @@
     "remove_token": "Remove token",
     "confirm_token": "Confirm Token",
     "user_added": "User Added",
-    "beta_tooltip": "Welcome to Raydium V3 ! Updates are ongoing. The V2 site can still be accessed <0>here</0>.",
+    "beta_tooltip": "Welcome to TurboSwap V3 ! Updates are ongoing. The V2 site can still be accessed <0>here</0>.",
     "days": "Days",
     "sort_by": "Sort By",
     "app_version_available": "New version available",
@@ -107,7 +107,7 @@
     "updated": "Updated",
     "ecosystem": "Ecosystem",
     "fusion": "Fusion",
-    "raydium": "Raydium",
+    "raydium": "TurboSwap",
     "openbook": "Openbook"
   },
   "setting_board": {
@@ -137,7 +137,7 @@
     "transaction_priority_desc": "The priority fee is paid to the Solana network. This additional fee helps boost how a transaction is prioritized against others, resulting in faster transaction execution times.",
     "transaction_priority_fee": "Transaction Priority Fee",
     "transaction_priority_fee_tip": "The priority fee is paid to the Solana network. This additional fee boosts transaction prioritization, resulting in faster execution times. Note that the fee is taken even if a transaction ultimately fails.",
-    "transaction_priority_fee_usage": "Fee settings are applied across all Raydium features, including Swap, Liquidity, and Staking.",
+    "transaction_priority_fee_usage": "Fee settings are applied across all TurboSwap features, including Swap, Liquidity, and Staking.",
     "priority_level": "Priority Level",
     "priority_level_fast": "Fast",
     "priority_level_turbo": "Turbo",
@@ -146,24 +146,24 @@
     "priority_mode_max_cap": "Max Cap",
     "priority_mode_exact_fee": "Exact Fee",
     "priority_mode_set_max_cap": "Set Max Cap",
-    "priority_fee_auto_optimizes": "Raydium auto-optimizes priority fees for your transaction. Set a max cap to prevent overpaying.",
+    "priority_fee_auto_optimizes": "TurboSwap auto-optimizes priority fees for your transaction. Set a max cap to prevent overpaying.",
     "priority_fee_exact": "Transactions will use the exact fee set below.",
     "priority_fee_below_market_rate": "Your current max fee is below market rate. Increase it to ensure your transactions are processed."
   },
   "wallet_connect_panel": {
-    "title": "Connect your wallet to Raydium",
+    "title": "Connect your wallet to TurboSwap",
     "desc": "By connecting your wallet, you acknowledge that you have read, understand and accept the terms in the",
     "desc_link": "disclaimer",
     "choose_network": "Choose network",
     "choose_wallet": "Choose wallet",
     "show_uninstalled_wallets": "Show uninstalled wallets",
     "tour_title": "New here?",
-    "tour_desc": "Get started on Raydium",
+    "tour_desc": "Get started on TurboSwap",
     "disconnect": "Disconnect",
     "auto_confirm": "Auto Confirm",
     "auto_approve": "Auto Approve",
-    "auto_confirm_tip": "Auto-confirm is now available for all transactions on Raydium. <0>Learn More</0>",
-    "auto_approve_tip_solflare": "Auto-approve is now available for all transactions on Raydium.",
+    "auto_confirm_tip": "Auto-confirm is now available for all transactions on TurboSwap. <0>Learn More</0>",
+    "auto_approve_tip_solflare": "Auto-approve is now available for all transactions on TurboSwap.",
     "phantom_wallet_not_installed": "Oops... Looks like you don’t have Phantom installed!",
     "install_phantom": "Install Phantom",
     "how_to_install_phantom": "How to install Phantom?",
@@ -728,12 +728,12 @@
     "button_initialize_liquidity_pool": "Initialize Liquidity Pool",
     "pool_create_integrated_with_openbook": "To create a pool that is integrated with an OpenBook market, click ",
     "pool_create_integrated_with_openbook_link": "here",
-    "initial_price_tooltip": "Initial price is set by the ratio of tokens deposited for initial liquidity. If the token is already trading on Raydium, initial price will be auto-filled with the current price.",
+    "initial_price_tooltip": "Initial price is set by the ratio of tokens deposited for initial liquidity. If the token is already trading on TurboSwap, initial price will be auto-filled with the current price.",
     "pool_creation_fee_note": "Note: A creation fee of {{subject}} SOL is required for new pools.",
     "pool_creation_fee_tooltip": "A pool creation fee of 0.15 SOL is currently reserved to support front and backend infrastructure. Approximately 0.05 SOL is required for program account creation and network fees.",
     "custom": "Custom",
     "start_now": "Start Now",
-    "current_price_tooltip": "This is the current price of an existing pool on Raydium. You can still enter a different initial price but be aware this may lead to arbitrage if the price difference is large."
+    "current_price_tooltip": "This is the current price of an existing pool on TurboSwap. You can still enter a different initial price but be aware this may lead to arbitrage if the price difference is large."
   },
   "create_farm": {
     "weekly_rewards": "Weekly Rewards",
@@ -763,7 +763,7 @@
     "button_create_farm": "Create Farm",
     "error_text_create_farm": "User must have 300 RAY",
     "please_note": "Please Note",
-    "please_note_des": "Rewards allocated to farms cannot be withdrawn after farming starts. Newly created farms generally appear on Raydium 10-30 minutes after creation, depending on Solana network status.",
+    "please_note_des": "Rewards allocated to farms cannot be withdrawn after farming starts. Newly created farms generally appear on TurboSwap 10-30 minutes after creation, depending on Solana network status.",
     "note_des": "A farm can be created for any pool that is already live. For detailed instructions, read the guide for <0>CLMM</0> or <1>Standard</1> farms.",
     "add_reward_token": "You can add up to 3 reward tokens.",
     "estimated_rewards_week": "Estimated rewards / week"
@@ -796,16 +796,16 @@
     "step3": "step 3",
     "step1_text": "Sign-up or login with Phantom.",
     "step2_text": "Buy Solana with MoonPay to top up your trading account.",
-    "step3_text": "Buy & sell any token with one-click on Raydium."
+    "step3_text": "Buy & sell any token with one-click on TurboSwap."
   },
   "disclaimer": {
     "title": "Disclaimer",
-    "text1": "This website-hosted user interface (this \"Interface\") is an open source frontend software portal to the Raydium protocol, a decentralized and community-driven collection of blockchain-enabled smart contracts and tools (the \"Raydium Protocol\"). This Interface and the Raydium Protocol are made available by the Raydium Holding Foundation, however all transactions conducted on the protocol are run by related permissionless smart contracts. As the Interface is open-sourced and the Raydium Protocol and its related smart contracts are accessible by any user, entity or third party, there are a number of third party web and mobile user-interfaces that allow for interaction with the Raydium Protocol.",
-    "text2": "THIS INTERFACE AND THE RAYDIUM PROTOCOL ARE PROVIDED \"AS IS\", AT YOUR OWN RISK, AND WITHOUT WARRANTIES OF ANY KIND. The Raydium Holding Foundation does not provide, own, or control the Raydium Protocol or any transactions conducted on the protocol or via related smart contracts. By using or accessing this Interface or the Raydium Protocol and related smart contracts, you agree that no developer or entity involved in creating, deploying or maintaining this Interface or the Raydium Protocol will be liable for any claims or damages whatsoever associated with your use, inability to use, or your interaction with other users of, this Interface or the Raydium Protocol, including any direct, indirect, incidental, special, exemplary, punitive or consequential damages, or loss of profits, digital assets, tokens, or anything else of value.",
-    "text3": "The Raydium Protocol is not available to residents of Belarus, the Central African Republic, The Democratic Republic of Congo, the Democratic People's Republic of Korea, the Crimea, Donetsk People's Republic, and Luhansk People's Republic regions of Ukraine, Cuba, Iran, Libya, Somalia, Sudan, South Sudan, Syria, the USA, Yemen, Zimbabwe and any other jurisdiction in which accessing or using the Raydium Protocol is prohibited (the \"Prohibited Jurisdictions\").",
-    "text4": "By using or accessing this Interface, the Raydium Protocol, or related smart contracts, you represent that you are not located in, incorporated or established in, or a citizen or resident of the Prohibited Jurisdictions. You also represent that you are not subject to sanctions or otherwise designated on any list of prohibited or restricted parties or excluded or denied persons, including but not limited to the lists maintained by the United States' Department of Treasury's Office of Foreign Assets Control, the United Nations Security Council, the European Union or its Member States, or any other government authority.",
+    "text1": "This website-hosted user interface (this \"Interface\") is an open source frontend software portal to the TurboSwap protocol, a decentralized and community-driven collection of blockchain-enabled smart contracts and tools (the \"TurboSwap Protocol\"). This Interface and the TurboSwap Protocol are made available by the TurboSwap Holding Foundation, however all transactions conducted on the protocol are run by related permissionless smart contracts. As the Interface is open-sourced and the TurboSwap Protocol and its related smart contracts are accessible by any user, entity or third party, there are a number of third party web and mobile user-interfaces that allow for interaction with the TurboSwap Protocol.",
+    "text2": "THIS INTERFACE AND THE TurboSwap PROTOCOL ARE PROVIDED \"AS IS\", AT YOUR OWN RISK, AND WITHOUT WARRANTIES OF ANY KIND. The TurboSwap Holding Foundation does not provide, own, or control the TurboSwap Protocol or any transactions conducted on the protocol or via related smart contracts. By using or accessing this Interface or the TurboSwap Protocol and related smart contracts, you agree that no developer or entity involved in creating, deploying or maintaining this Interface or the TurboSwap Protocol will be liable for any claims or damages whatsoever associated with your use, inability to use, or your interaction with other users of, this Interface or the TurboSwap Protocol, including any direct, indirect, incidental, special, exemplary, punitive or consequential damages, or loss of profits, digital assets, tokens, or anything else of value.",
+    "text3": "The TurboSwap Protocol is not available to residents of Belarus, the Central African Republic, The Democratic Republic of Congo, the Democratic People's Republic of Korea, the Crimea, Donetsk People's Republic, and Luhansk People's Republic regions of Ukraine, Cuba, Iran, Libya, Somalia, Sudan, South Sudan, Syria, the USA, Yemen, Zimbabwe and any other jurisdiction in which accessing or using the TurboSwap Protocol is prohibited (the \"Prohibited Jurisdictions\").",
+    "text4": "By using or accessing this Interface, the TurboSwap Protocol, or related smart contracts, you represent that you are not located in, incorporated or established in, or a citizen or resident of the Prohibited Jurisdictions. You also represent that you are not subject to sanctions or otherwise designated on any list of prohibited or restricted parties or excluded or denied persons, including but not limited to the lists maintained by the United States' Department of Treasury's Office of Foreign Assets Control, the United Nations Security Council, the European Union or its Member States, or any other government authority.",
     "agree_terms": "Agree to terms",
-    "enter_raydium": "Enter Raydium"
+    "enter_TurboSwap": "Enter TurboSwap"
   },
   "bridge": {
     "title": "Bridge"

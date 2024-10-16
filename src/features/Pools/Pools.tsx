@@ -59,6 +59,8 @@ import { getFavoritePoolCache, POOL_SORT_KEY } from './util'
 import i18n from '@/i18n'
 import { setUrlQuery, useRouteQuery } from '@/utils/routeTools'
 import { urlToMint, mintToUrl } from '@/utils/token'
+import { epsGetPoolInfo } from '@/utils/poolInfo'
+import { getTvlData } from './tvldata'
 
 export type PoolPageQuery = {
   token?: string
@@ -283,21 +285,33 @@ export default function Pools() {
   const isSearchLoading = isSearchPublicKey ? isSearchIdLoading || isSearchMintLoading : isSearchMintLoading
   const isSearchLoadEnded = isSearchPublicKey ? !isSearchIdLoading && isSearchMintLoadEnded : isSearchMintLoadEnded
   const isNotFound = (searchTokens.length > 0 || isSearchPublicKey) && !isSearchLoading && !searchData.length
+  const [poolinfo, setPoolinfo] = useState<any>([])
 
-  const data = hasSearch || searchIdData?.length ? searchData : orgData
+  const fetchPoolInfo = async () => {
+    const pool = await epsGetPoolInfo()
+    setPoolinfo(pool)
+  }
+
+  useEffect(() => {
+    fetchPoolInfo()
+  }, [])
+
+  // const data = hasSearch || searchIdData?.length ? searchData : orgData
+  // const data = poolinfo
   const isLoading = hasSearch ? isSearchLoading : isOrgLoading
   const isLoadEnded = hasSearch ? isSearchLoadEnded : isOrgLoadedEnd
-  const loadMore = hasSearch ? () => {} : orgLoadMore
+  const loadMore = hasSearch ? () => { } : orgLoadMore
   const sortedData = useMemo(() => {
-    // if (!favoritePools.size) return data
-    const favorite: FormattedPoolInfoItem[] = []
-    const normal: FormattedPoolInfoItem[] = []
-    data.forEach((p) => {
-      if (favoritePools.has(p.id)) return favorite.push(p)
-      normal.push(p)
-    })
-    return [...favorite, ...normal]
-  }, [data, Array.from(favoritePools).toString()])
+    return poolinfo
+    // // if (!favoritePools.size) return data
+    // const favorite: FormattedPoolInfoItem[] = []
+    // const normal: FormattedPoolInfoItem[] = []
+    // data.forEach((p) => {
+    //   if (favoritePools.has(p.id)) return favorite.push(p)
+    //   normal.push(p)
+    // })
+    // return [...favorite, ...normal]
+  }, [poolinfo])
 
   const prevSearch = usePrevious(search)
   const sortRef = useRef<string>('default')
@@ -336,7 +350,8 @@ export default function Pools() {
   const { containerProps, titleContainerProps, scrollBodyProps } = useScrollTitleCollapse()
   const { isOpen: isCollapseOpen, onToggle: toggleSubcontrollers } = useDisclosure()
 
-  const [tvl, volume] = infoData ? [infoData.tvl, infoData.volume24] : ['0', '0']
+  // const [tvl, volume] = infoData ? [infoData.tvl, infoData.volume24] : ['0', '0']
+  const { tvl, volume } = getTvlData()
 
   const renderPoolListItem = useCallback(
     (info: FormattedPoolInfoItem, idx: number) => (
@@ -362,18 +377,18 @@ export default function Pools() {
           <Desktop>
             <HStack justify="space-between" w="full" pb={4}>
               <PageHeroTitle title={t('liquidity.pools')} description={t('liquidity.pools_desc') || ''} />
-              <TVLInfoPanel tvl={tvl} volume={volume} />
+              {/* <TVLInfoPanel tvl={tvl} volume={volume} /> */}
             </HStack>
           </Desktop>
         </Box>
 
-        <Mobile>
+        {/* <Mobile>
           <Box {...titleContainerProps} mb={0.5} flexShrink={0} marginX={revertAppLayoutPaddingX}>
             <Mobile>
               <TVLInfoPanelMobile tvl={tvl} volume={volume} />
             </Mobile>
           </Box>
-        </Mobile>
+        </Mobile> */}
 
         {/* Controller Part */}
         <Box marginX={revertAppLayoutPaddingX} mb={[0, 3]}>
@@ -400,7 +415,7 @@ export default function Pools() {
             paddingX={appLayoutPaddingX}
             backgroundColor={['transparent', colors.backgroundLight30]}
           >
-            <GridItem area={'tabs'}>
+            {/* <GridItem area={'tabs'}>
               <Desktop>
                 <Tabs
                   items={tabItems}
@@ -428,7 +443,7 @@ export default function Pools() {
                   onChange={(value) => onPoolValueChange(value)}
                 />
               </Mobile>
-            </GridItem>
+            </GridItem> */}
 
             <GridItem area={'search'}>
               <TokenSearchInput

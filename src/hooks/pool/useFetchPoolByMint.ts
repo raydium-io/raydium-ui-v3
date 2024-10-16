@@ -63,9 +63,8 @@ export default function useFetchPoolByMint<T extends PoolFetchType>(
     (index) =>
       url
         ? url +
-          `?mint1=${baseMint}&mint2=${quoteMint}&poolType=${
-            showFarms ? `${type}Farm` : type
-          }&poolSortField=${sort}&sortType=${order}&pageSize=${pageSize}&page=${index + 1}`
+        `?mint1=${baseMint}&mint2=${quoteMint}&poolType=${showFarms ? `${type}Farm` : type
+        }&poolSortField=${sort}&sortType=${order}&pageSize=${pageSize}&page=${index + 1}`
         : url,
     fetcher,
     {

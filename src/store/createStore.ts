@@ -20,13 +20,13 @@ const createStore = <T>(
     setState: Get<Mutate<StoreApi<T>, MiddleWares>, 'setState', undefined>,
     getState: Get<Mutate<StoreApi<T>, MiddleWares>, 'getState', undefined>,
     store: Mutate<StoreApi<T>, MiddleWares>,
-    $$storeMutations: MiddleWares
+    // $$storeMutations: MiddleWares
   ) => T,
   name?: string
 ) => {
   const store = create<T, MiddleWares>(
     devtools(
-      immer((set, get, store, $$storeMutations) => {
+      immer((set, get, store) => {
         // this function is to add log to redux dev tool
         const logSet: Get<Mutate<StoreApi<T>, MiddleWares>, 'setState', undefined> = (nextStateOrUpdater, shouldReplace, action) => {
           let objAct = action || {}
@@ -34,7 +34,7 @@ const createStore = <T>(
           return set(nextStateOrUpdater, shouldReplace, { ...(objAct || { type: 'unknown' }), payload: nextStateOrUpdater } as any)
         }
 
-        return fn(logSet, get, store, $$storeMutations)
+        return fn(logSet, get, store)
 
         // maybe need while try to catch all tx
         // const storeState = fn(logSet, get, store, $$storeMutations)

@@ -25,14 +25,14 @@ export const solToWSolToken = (token: ApiV3Token): ApiV3Token => {
 }
 
 export const wsolToSolToken = (token: ApiV3Token): ApiV3Token => {
-  if (token.address === WSOLMint.toBase58()) {
-    return {
-      ...token,
-      address: SOL_INFO.address,
-      symbol: SOL_INFO.symbol,
-      name: SOL_INFO.name
-    }
-  }
+  // if (token.address === WSOLMint.toBase58()) {
+  //   return {
+  //     ...token,
+  //     address: SOL_INFO.address,
+  //     symbol: SOL_INFO.symbol,
+  //     name: SOL_INFO.name
+  //   }
+  // }
   return token
 }
 
@@ -81,8 +81,8 @@ export const filterTokenFn = (list: TokenInfo[], params?: { searchStr?: string; 
     })
     tokenGroup[1] = tokenGroup[1]
       ? sortItems(tokenGroup[1], {
-          sortRules: [{ value: (i) => i.type === 'raydium' }]
-        })
+        sortRules: [{ value: (i) => i.type === 'raydium' }]
+      })
       : tokenGroup[1]
     filteredList = tokenGroup.flat().filter(Boolean)
   }

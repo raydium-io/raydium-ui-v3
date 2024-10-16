@@ -26,13 +26,13 @@ export function QuestionToolTip(props: {
       }
     >
       <Box cursor={props.label ? 'pointer' : undefined}>
-        {props.iconType === 'info' ? (
+        {/* {props.iconType === 'info' ? (
           // @ts-expect-error don't why this error
           <InfoCircleIcon style={{ display: 'block' }} {...props.iconProps} />
         ) : (
           // @ts-expect-error don't why this error
           <QuestionCircleIcon style={{ display: 'block' }} {...props.iconProps} />
-        )}
+        )} */}
       </Box>
     </Tooltip>
   )

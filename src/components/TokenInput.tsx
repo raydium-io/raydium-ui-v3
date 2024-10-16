@@ -32,6 +32,11 @@ import TokenSelectDialog, { TokenSelectDialogProps } from './TokenSelectDialog'
 import TokenUnknownAddDialog from './TokenSelectDialog/components/TokenUnknownAddDialog'
 import TokenFreezeDialog from './TokenSelectDialog/components/TokenFreezeDialog'
 import { TokenListHandles } from './TokenSelectDialog/components/TokenList'
+import { getOrCreateAssociatedTokenAccount, getAssociatedTokenAddressSync, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { Connection, PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js';
+import { useWallet } from '@solana/wallet-adapter-react';
+import axios from 'axios'
+import { tokensPrices } from '@/utils/tokenInfo'
 
 export const DEFAULT_SOL_RESERVER = 0.01
 export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'> {
@@ -58,7 +63,8 @@ export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'
    * - upper grid py: 10px
    */
   size?: 'md' | 'sm'
-  token?: TokenInfo | ApiV3Token | string
+  // token?: TokenInfo | ApiV3Token
+  token?: any
   /** <NumberInput> is disabled */
   readonly?: boolean
   loading?: boolean
@@ -104,7 +110,7 @@ function TokenInput(props: TokenInputProps) {
     id,
     name,
     size: inputSize,
-    token: inputToken,
+    token,
     hideBalance = false,
     hideTokenIcon = false,
     hideControlButton = false,
@@ -139,6 +145,7 @@ function TokenInput(props: TokenInputProps) {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { isOpen: isOpenUnknownTokenConfirm, onOpen: onOpenUnknownTokenConfirm, onClose: onCloseUnknownTokenConfirm } = useDisclosure()
   const { isOpen: isOpenFreezeTokenConfirm, onOpen: onOpenFreezeTokenConfirm, onClose: onCloseFreezeTokenConfirm } = useDisclosure()
+  const wallet = useWallet();
 
   const size = inputSize ?? isMobile ? 'sm' : 'md'
   const sizes = {
@@ -159,13 +166,15 @@ function TokenInput(props: TokenInputProps) {
 
   // price
   const tokenMap = useTokenStore((s) => s.tokenMap)
-  const token = typeof inputToken === 'string' ? tokenMap.get(inputToken) : inputToken
+  // const token = typeof inputToken === 'string' ? tokenMap.get(inputToken) : inputToken
+  // const [token, setToken] = useState<TokenInfo | null>(null)
   const { data: tokenPrice } = useTokenPrice({
     mintList: [token?.address]
   })
   const value = shakeValueDecimal(inputValue, token?.decimals)
-  const price = tokenPrice[token?.address || '']?.value
-  const totalPrice = price && value ? new Decimal(price ?? 0).mul(value).toString() : ''
+  const price = tokensPrices[token?.symbol || '']?.price
+  const [totalPrice, setTotalPrice] = useState<number | "">("");
+  // const totalPrice = price && value ? new Decimal(price ?? 0).mul(value).toString() : ''
 
   // balance
   const getTokenBalanceUiAmount = useTokenAccountStore((s) => s.getTokenBalanceUiAmount)
@@ -181,6 +190,19 @@ function TokenInput(props: TokenInputProps) {
 
   const [unknownToken, setUnknownToken] = useState<TokenInfo | ApiV3Token>()
   const [freezeToken, setFreezeToken] = useState<TokenInfo | ApiV3Token>()
+  const [amount, setAmount] = useState(0);
+
+  const getTokenPrice = () => {
+    axios.defaults.headers.common["x-cg-api-key"] = `CG-FFGgJFo6GhYWQTEi7RLo93iw`;
+
+    axios.get(`https://api.coingecko.com/api/v3/simple/token_price/eclipse?contract_addresses=${token?.address}&vs_currencies=usd`)
+      .then(response => console.log(response))
+      .catch(err => console.error(err));
+  }
+
+  useEffect(() => {
+    // getTokenPrice();
+  }, [])
 
   // const handleValidate = useEvent((value: string) => {
   //   return numberRegExp.test(value)
@@ -193,25 +215,69 @@ function TokenInput(props: TokenInputProps) {
     onFocus?.()
   })
 
-  const getBalanceString = useEvent((amount: string) => {
-    if (token?.address !== SOL_INFO.address || !balanceMaxString) return amount
-    if (new Decimal(balanceMaxString).sub(amount).gte(solReserveAmount)) return amount
-    let decimal = new Decimal(amount).sub(solReserveAmount)
-    if (decimal.lessThan(0)) decimal = new Decimal(0)
-    return trimTrailZero(decimal.toFixed(token.decimals))!
+  const fetchAmount = async () => {
+    if (token && wallet.publicKey) {
+      const connection = new Connection("https://testnet.dev2.eclipsenetwork.xyz", 'confirmed');
+
+      try {
+        if (token.address === "So11111111111111111111111111111111111111112") {
+          let accountInfo = await connection.getAccountInfo(wallet.publicKey);
+
+          setAmount(accountInfo?.lamports ? accountInfo?.lamports / 1_000_000_000 : 0)
+          setTotalPrice(price * (accountInfo?.lamports ? accountInfo?.lamports / 1_000_000_000 : 0))
+        }
+        else {
+          let tokenAccount = await getAssociatedTokenAddressSync(new PublicKey(token?.address), wallet.publicKey);
+          const info = await connection.getTokenAccountBalance(tokenAccount);
+          if (!info) throw new Error('No balance found');
+          if (info.value.uiAmount == null) throw new Error('No balance found');
+          setAmount(info.value.uiAmount)
+          setTotalPrice(price * info.value.uiAmount)
+        }
+      } catch (error) {
+        setAmount(0)
+        setTotalPrice(0)
+        console.log(error)
+      }
+    }
+  }
+
+  useEffect(() => {
+    fetchAmount();
+    // getTokenPrice();
+
+  }, [token])
+
+  const getBalanceString = useEvent(async (half: boolean) => {
+    if (token && wallet.publicKey) {
+      const connection = new Connection("https://testnet.dev2.eclipsenetwork.xyz", 'confirmed');
+
+      let tokenAccount = await getAssociatedTokenAddressSync(new PublicKey(token?.address), wallet.publicKey);
+      const info = await connection.getTokenAccountBalance(tokenAccount);
+      if (info.value.uiAmount == null) throw new Error('No balance found');
+      if (half) return (info.value.uiAmount / 2).toString();
+      return info.value.uiAmount.toString();
+    }
+    return "0";
+
+    // if (token?.address !== SOL_INFO.address || !balanceMaxString) return amount
+    // if (new Decimal(balanceMaxString).sub(amount).gte(solReserveAmount)) return amount
+    // let decimal = new Decimal(amount).sub(solReserveAmount)
+    // if (decimal.lessThan(0)) decimal = new Decimal(0)
+    // return trimTrailZero(decimal.toFixed(token.decimals))!
   })
 
-  const handleClickMax = useEvent(() => {
+  const handleClickMax = useEvent(async () => {
     if (disableClickBalance) return
     if (!maxString) return
     handleFocus()
-    onChange?.(getBalanceString(maxString))
+    onChange?.(amount.toString())
   })
 
-  const handleClickHalf = useEvent(() => {
+  const handleClickHalf = useEvent(async () => {
     if (!maxString) return
     handleFocus()
-    onChange?.(getBalanceString(maxDecimal.div(2).toString()))
+    onChange?.((amount / 2).toString())
   })
 
   const isUnknownToken = useEvent((token: TokenInfo) => {
@@ -227,28 +293,29 @@ function TokenInput(props: TokenInputProps) {
 
   const handleSelectToken = useEvent((token: TokenInfo) => {
     const isFreeze = isFreezeToken(token)
-    if (isFreeze) {
-      setFreezeToken(token)
-    }
-    const shouldShowUnknownTokenConfirm = isUnknownToken(token)
-    if (shouldShowUnknownTokenConfirm) {
-      setUnknownToken(token)
-      onOpenUnknownTokenConfirm()
-      return
-    }
-    if (isFreeze) {
-      if (name === 'swap') {
-        onOpenFreezeTokenConfirm()
-        return
-      } else {
-        // toastSubject.next({
-        //   title: t('token_selector.token_freeze_warning'),
-        //   description: t('token_selector.token_has_freeze_disable'),
-        //   status: 'warning'
-        // })
-      }
-      // return
-    }
+    // if (isFreeze) {
+    //   setFreezeToken(token)
+    // }
+    // const shouldShowUnknownTokenConfirm = isUnknownToken(token)
+    // console.log(shouldShowUnknownTokenConfirm)
+    // if (shouldShowUnknownTokenConfirm) {
+    //   setUnknownToken(token)
+    //   onOpenUnknownTokenConfirm()
+    //   return
+    // }
+    // if (isFreeze) {
+    //   if (name === 'swap') {
+    //     onOpenFreezeTokenConfirm()
+    //     return
+    //   } else {
+    //     // toastSubject.next({
+    //     //   title: t('token_selector.token_freeze_warning'),
+    //     //   description: t('token_selector.token_has_freeze_disable'),
+    //     //   status: 'warning'
+    //     // })
+    //   }
+    //   // return
+    // }
     onTokenChange?.(token)
     onClose()
   })
@@ -357,7 +424,7 @@ function TokenInput(props: TokenInputProps) {
               sx={{ textUnderlineOffset: '1px' }}
               _hover={{ textDecorationThickness: '1.5px', textUnderlineOffset: '2px' }}
             >
-              {formatCurrency(maxString, { decimalPlaces: token?.decimals })}
+              {formatCurrency(amount.toString(), { decimalPlaces: token?.decimals })}
             </Text>
           </HStack>
         )}

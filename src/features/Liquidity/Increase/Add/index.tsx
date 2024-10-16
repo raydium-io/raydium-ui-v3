@@ -1,5 +1,5 @@
 import { Flex, HStack, Text, useDisclosure } from '@chakra-ui/react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import Button from '@/components/Button'
@@ -9,16 +9,19 @@ import HorizontalSwitchSmallIcon from '@/icons/misc/HorizontalSwitchSmallIcon'
 import { useAppStore, useLiquidityStore, useTokenAccountStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
 import { formatCurrency } from '@/utils/numberish/formatter'
-import { getTokenSymbol, convertWsolToSolString } from '@/utils/token' // Custom utility function replacements
 import StakeLpModal from './components/StakeLpModal'
 import { SlippageAdjuster } from '@/components/SlippageAdjuster'
-
+import { IDL } from '@/idl/raydium_cp_swap';
+import { Connection, PublicKey } from '@solana/web3.js';
+import { getAssociatedTokenAddressSync, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import Decimal from 'decimal.js'
 import shallow from 'zustand/shallow'
 import { useEvent } from '@/hooks/useEvent'
 import { throttle } from '@/utils/functionMethods'
 import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
-import BN from 'bn.js'
+import { Program, AnchorProvider, BN, utils } from '@project-serum/anchor';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { getAmmConfigAddress, getAuthAddress, getPoolAddress, getPoolLpMintAddress, getPoolVaultAddress, getOrcleAccountAddress } from '@/utils/pda'
 
 // Custom type interfaces to replace Raydium SDK types
 interface PoolInfo {
@@ -30,7 +33,8 @@ interface PoolInfo {
   lpPrice: number
   lpMint: { decimals: number }
   farmOngoingCount: number
-  programId: string
+  programId: string,
+  poolId: string
 }
 
 interface TokenInfo {
@@ -59,6 +63,7 @@ export default function AddLiquidity({
   onRefresh: () => void
   onSelectToken: (token: TokenInfo, side: 'base' | 'quote') => void
 }) {
+  const wallet = useWallet();
   const { t } = useTranslation()
   const [addLiquidityAct, computePairAmount, addCpmmLiquidityAct] = useLiquidityStore(
     (s) => [s.addLiquidityAct, s.computePairAmount, s.addCpmmLiquidityAct],
@@ -87,36 +92,109 @@ export default function AddLiquidity({
 
   const circleRef = useRef<IntervalCircleHandler>(null)
 
+  const [tokenBalance, setTokenBalance] = useState<{ token1: number, token2: number }>({ token1: 0, token2: 0 })
+
+  const anchorWallet = useMemo(() => {
+    if (!wallet.publicKey || !wallet.signTransaction || !wallet.signAllTransactions) return null;
+    return {
+      publicKey: wallet.publicKey,
+      signTransaction: wallet.signTransaction.bind(wallet),
+      signAllTransactions: wallet.signAllTransactions.bind(wallet),
+    };
+  }, [wallet]);
+
+  const fetchAmount = async () => {
+    try {
+      if (anchorWallet && tokenPair.base && tokenPair.quote && pool) {
+
+        const connection = new Connection("https://testnet.dev2.eclipsenetwork.xyz", 'confirmed');
+        const provider = new AnchorProvider(connection, anchorWallet, AnchorProvider.defaultOptions());
+        const programId = new PublicKey('tmcnqP66JdK5UwnfGWJCy66K9BaJjnCqvoGNYEn9VJv');
+        const program = new Program(IDL, programId, provider);
+
+        const token0 = new PublicKey(tokenPair.base?.address)
+        const token1 = new PublicKey(tokenPair.quote?.address)
+
+        const poolAddress = new PublicKey(pool.poolId)
+
+        // const [vault0] = await getPoolVaultAddress(
+        //   poolAddress,
+        //   token0,
+        //   program.programId
+        // );
+        // const [vault1] = await getPoolVaultAddress(
+        //   poolAddress,
+        //   token1,
+        //   program.programId
+        // );
+
+        const vault0 = getAssociatedTokenAddressSync(token0, poolAddress, true, TOKEN_PROGRAM_ID)
+        const vault1 = getAssociatedTokenAddressSync(token1, poolAddress, true)
+
+        const tokenBalance1 = await connection.getTokenAccountBalance(vault0);
+        const tokenBalance2 = await connection.getTokenAccountBalance(vault1);
+
+        setTokenBalance({
+          token1: tokenBalance1.value.uiAmount ? tokenBalance1.value.uiAmount : 0,
+          token2: tokenBalance2.value.uiAmount ? tokenBalance2.value.uiAmount : 0
+        })
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    fetchAmount()
+  }, [])
+
   const handleCompute = useEvent(() => {
     if (!pool) return
+    // const isBase = focusRef.current === 'base'
+    // const updateSide = isBase ? 'quote' : 'base'
+    // if (computeAmountRef.current[focusRef.current] === '' || poolNotFound) {
+    //   setPairAmount((prev) => {
+    //     computeAmountRef.current = { ...prev, [updateSide]: '' }
+    //     return { ...prev, [updateSide]: '' }
+    //   })
+    //   return
+    // }
+
+    // const rpcLpAmount = rpcData?.lpAmount ?? rpcData?.lpSupply
+    // computePairAmount({
+    //   pool: {
+    //     ...pool,
+    //     lpAmount: rpcData ? new Decimal(rpcLpAmount!.toString()).div(10 ** rpcData.lpDecimals).toNumber() : pool.lpAmount
+    //   },
+    //   amount: computeAmountRef.current[focusRef.current] || '0',
+    //   baseReserve: rpcData?.baseReserve || new BN(new Decimal(pool.mintAmountA).mul(10 ** pool.mintA.decimals).toString()),
+    //   quoteReserve: rpcData?.quoteReserve || new BN(new Decimal(pool.mintAmountB).mul(10 ** pool.mintB.decimals).toString()),
+    //   baseIn: isBase
+    // }).then((r) => {
+    //   computeAmountRef.current[updateSide] = new Decimal(r.maxOutput).toFixed()
+    //   computedLpRef.current = new Decimal(r.liquidity.toString())
+    //   setPairAmount((prev) => ({
+    //     ...prev,
+    //     [updateSide]: new Decimal(r.output).toFixed()
+    //   }))
+    // })
+
+    tokenBalance?.token1
     const isBase = focusRef.current === 'base'
     const updateSide = isBase ? 'quote' : 'base'
-    if (computeAmountRef.current[focusRef.current] === '' || poolNotFound) {
-      setPairAmount((prev) => {
-        computeAmountRef.current = { ...prev, [updateSide]: '' }
-        return { ...prev, [updateSide]: '' }
-      })
-      return
+    let amount = 0;
+
+    if (updateSide === "base") {
+      amount = parseFloat(computeAmountRef.current[focusRef.current]) * tokenBalance?.token2 / tokenBalance?.token1
+    }
+    else {
+      amount = parseFloat(computeAmountRef.current[focusRef.current]) * tokenBalance?.token1 / tokenBalance?.token2
     }
 
-    const rpcLpAmount = rpcData?.lpAmount ?? rpcData?.lpSupply
-    computePairAmount({
-      pool: {
-        ...pool,
-        lpAmount: rpcData ? new Decimal(rpcLpAmount!.toString()).div(10 ** rpcData.lpDecimals).toNumber() : pool.lpAmount
-      },
-      amount: computeAmountRef.current[focusRef.current] || '0',
-      baseReserve: rpcData?.baseReserve || new BN(new Decimal(pool.mintAmountA).mul(10 ** pool.mintA.decimals).toString()),
-      quoteReserve: rpcData?.quoteReserve || new BN(new Decimal(pool.mintAmountB).mul(10 ** pool.mintB.decimals).toString()),
-      baseIn: isBase
-    }).then((r) => {
-      computeAmountRef.current[updateSide] = new Decimal(r.maxOutput).toFixed()
-      computedLpRef.current = new Decimal(r.liquidity.toString())
-      setPairAmount((prev) => ({
-        ...prev,
-        [updateSide]: new Decimal(r.output).toFixed()
-      }))
-    })
+    setPairAmount((prev) => ({
+      ...prev,
+      [updateSide]: amount
+    }))
   })
 
   const handleAmountChange = useEvent((val: string, side: 'base' | 'quote') => {
@@ -135,33 +213,33 @@ export default function AddLiquidity({
   const [isBalanceAEnough, isBalanceBEnough] = [
     tokenPair.base
       ? new Decimal(getTokenBalanceUiAmount({ mint: tokenPair.base.address, decimals: tokenPair.base.decimals }).text).gte(
-          pairAmount.base || '0'
-        )
+        pairAmount.base || '0'
+      )
       : true,
     tokenPair.quote
       ? new Decimal(getTokenBalanceUiAmount({ mint: tokenPair.quote.address, decimals: tokenPair.quote.decimals }).text).gte(
-          pairAmount.quote || '0'
-        )
+        pairAmount.quote || '0'
+      )
       : true
   ]
 
   let error =
     new Decimal(pairAmount.base || '0').lte(0) || new Decimal(pairAmount.quote || '0').lte(0)
       ? {
-          key: 'error.enter_token_amount',
-          props: {}
-        }
+        key: 'error.enter_token_amount',
+        props: {}
+      }
       : undefined
-  error =
-    error ||
-    (!isBalanceAEnough || !isBalanceBEnough
-      ? {
-          key: 'error.insufficient_sub_balance',
-          props: {
-            token: isBalanceAEnough ? getTokenSymbol(tokenPair.quote!) : getTokenSymbol(tokenPair.base!)
-          }
-        }
-      : undefined)
+  // error =
+  //   error ||
+  //   (!isBalanceAEnough || !isBalanceBEnough
+  //     ? {
+  //       key: 'error.insufficient_sub_balance',
+  //       props: {
+  //         token: isBalanceAEnough ? getTokenSymbol(tokenPair.quote!) : getTokenSymbol(tokenPair.base!)
+  //       }
+  //     }
+  //     : undefined)
 
   const handleEnd = useCallback(
     throttle(() => {
@@ -194,13 +272,13 @@ export default function AddLiquidity({
 
     const baseIn = focusRef.current === 'base'
 
-    addLiquidityAct({
-      poolInfo: pool,
-      amountA: computeAmountRef.current.base,
-      amountB: computeAmountRef.current.quote,
-      fixedSide: baseIn ? 'a' : 'b',
-      ...callBacks
-    })
+    // addLiquidityAct({
+    //   poolInfo: pool,
+    //   amountA: computeAmountRef.current.base,
+    //   amountB: computeAmountRef.current.quote,
+    //   fixedSide: baseIn ? 'a' : 'b',
+    //   ...callBacks
+    // })
   }
 
   return (
@@ -257,16 +335,16 @@ export default function AddLiquidity({
       {/* footer */}
       <Flex mt={5} justify="space-between" align="center" w={InputWidth}>
         <HStack fontSize="sm" color={colors.textSecondary} spacing="6px">
-          <Text>
+          {/* <Text>
             {pool
               ? `1 ${convertWsolToSolString(pool[isReverse ? 'mintB' : 'mintA'].symbol)} ≈ ${formatCurrency(
-                  new Decimal((isReverse ? rpcMintAmountA! : rpcMintAmountB!) / (isReverse ? rpcMintAmountB! : rpcMintAmountA!)).toFixed(
-                    Math.max(pool[isReverse ? 'mintA' : 'mintB'].decimals, 6),
-                    Decimal.ROUND_UP
-                  )
-                )} ${convertWsolToSolString(pool[isReverse ? 'mintA' : 'mintB'].symbol)}`
+                new Decimal((isReverse ? rpcMintAmountA! : rpcMintAmountB!) / (isReverse ? rpcMintAmountB! : rpcMintAmountA!)).toFixed(
+                  Math.max(pool[isReverse ? 'mintA' : 'mintB'].decimals, 6),
+                  Decimal.ROUND_UP
+                )
+              )} ${convertWsolToSolString(pool[isReverse ? 'mintA' : 'mintB'].symbol)}`
               : '-'}
-          </Text>
+          </Text> */}
           <HorizontalSwitchSmallIcon cursor="pointer" onClick={onToggleReverse} />
         </HStack>
         <HStack fontSize="xl" color={colors.textPrimary} fontWeight="medium" spacing={3}>
