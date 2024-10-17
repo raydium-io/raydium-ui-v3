@@ -24,7 +24,7 @@ import HighRiskAlert from './HighRiskAlert'
 import { useRouteQuery, setUrlQuery } from '@/utils/routeTools'
 import WarningIcon from '@/icons/misc/WarningIcon'
 import dayjs from 'dayjs'
-import { getAccount, getOrCreateAssociatedTokenAccount, getAssociatedTokenAddressSync, createSyncNativeInstruction, NATIVE_MINT, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAccount, getOrCreateAssociatedTokenAccount, createCloseAccountInstruction, getAssociatedTokenAddressSync, createSyncNativeInstruction, NATIVE_MINT, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Trans } from 'react-i18next'
 import { formatToRawLocaleStr } from '@/utils/numberish/formatter'
 import useTokenInfo from '@/hooks/token/useTokenInfo'
@@ -358,6 +358,34 @@ export function SwapPanel({
     const signature = await wallet.sendTransaction(tx, connection);
     console.log(signature)
     // return tx;
+  }
+
+  const unWrapWSol = async () => {
+    if (!anchorWallet) return;
+    if (!inputMint || !outputMint) return;
+
+    onSending()
+
+    const connection = new Connection("https://testnet.dev2.eclipsenetwork.xyz", 'confirmed');
+    const provider = new AnchorProvider(connection, anchorWallet, AnchorProvider.defaultOptions());
+    const programId = new PublicKey('tmcnqP66JdK5UwnfGWJCy66K9BaJjnCqvoGNYEn9VJv');
+    const program = new Program(IDL, programId, provider);
+
+    const inputTokenAccountAddr1 = getAssociatedTokenAddressSync(
+      new PublicKey("So11111111111111111111111111111111111111112"),
+      anchorWallet.publicKey,
+      false,
+      TOKEN_PROGRAM_ID
+    );
+
+    const unwrapTransaction = new Transaction().add(
+      createCloseAccountInstruction(
+        inputTokenAccountAddr1,
+        anchorWallet.publicKey,
+        anchorWallet.publicKey
+      )
+    );
+    await wallet.sendTransaction(unwrapTransaction, connection)
   }
 
   const handleClickSwap = async () => {

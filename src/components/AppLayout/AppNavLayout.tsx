@@ -121,7 +121,7 @@ function AppNavLayout({
             <Link href="/swap">
               {/* <RaydiumLogo /> */}
               <Image
-                src="/images/logo3.png" // Path to your image in the public folder
+                src="/logo.png" // Path to your image in the public folder
                 alt="logo"
                 width={70} // Set the width of the image
                 height={70} // Set the height of the image
