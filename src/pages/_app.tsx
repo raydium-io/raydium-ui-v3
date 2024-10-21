@@ -14,6 +14,7 @@ import { isClient } from '../utils/common'
 import '@/components/Toast/toast.css'
 import '@/components/LandingPage/components/tvl.css'
 import '@/components/LandingPage/liquidity.css'
+import '@/components/AppLayout/mobilebottomNavbar.css'
 import 'react-day-picker/dist/style.css'
 import { GoogleAnalytics } from '@next/third-parties/google'
 
@@ -48,21 +49,23 @@ const MyApp = ({ Component, pageProps, lng, breakPoints, ...props }: AppProps & 
       <GoogleAnalytics gaId="G-DR3V6FTKE3" />
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-        <meta name="twitter:image" content="https://img-v1.raydium.io/share/7be7ee6c-56b2-451e-a010-6c21e0db2ee5.png" />
+        <meta name="twitter:url" content="https://x.com/turboswap_svm" />
+        {/* <meta name="twitter:image" content="https://img-v1.raydium.io/share/7be7ee6c-56b2-451e-a010-6c21e0db2ee5.png" /> */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@RaydiumProtocol" />
-        <meta name="twitter:creator" content="@RaydiumProtocol" />
-        {/* <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" /> */}
-        <meta name="twitter:title" content="Raydium" />
-        <meta name="twitter:description" content="An on-chain order book AMM powering the evolution of DeFi " />
-        <meta property="og:description" content="An on-chain order book AMM powering the evolution of DeFi " />
-        <meta property="og:url" content="https://raydium.io/" />
+        <meta name="twitter:site" content="@TurboSwapProtocol" />
+        <meta name="twitter:creator" content="@TurboSwapProtocol" />
+        <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+        <meta name="twitter:title" content="TurboSwap" />
+        <meta name="twitter:description" content="Lightning fast dex on Eclipse Network" />
+        <meta property="telegram:url" content="https://t.me/TurboSwap_SVM" />
+        <meta property="og:description" content="Lightning fast dex on Eclipse Network" />
+        <meta property="og:url" content="https://turboswap.fun/" />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content="https://img-v1.raydium.io/share/7be7ee6c-56b2-451e-a010-6c21e0db2ee5.png" />
-        <meta property="og:image:alt" content="Raydium" />
+        {/* <meta property="og:image" content="https://img-v1.raydium.io/share/7be7ee6c-56b2-451e-a010-6c21e0db2ee5.png" /> */}
+        <meta property="og:image:alt" content="TurboSwap" />
         <meta property="og:locale" content="en" />
-        <meta property="og:site_name" content="Raydium" />
-        <meta property="og:title" content="Swap | Raydium" />
+        <meta property="og:site_name" content="TurboSwap" />
+        <meta property="og:title" content="Swap | TurboSwap" />
         <title>{pageProps?.title ? `${pageProps.title} TurboSwap` : 'TurboSwap'}</title>
       </Head>
       <DynamicProviders>

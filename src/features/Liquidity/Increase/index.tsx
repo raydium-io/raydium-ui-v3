@@ -24,6 +24,7 @@ import PositionBalance from './components/PositionBalance'
 import StakeableHint from './components/StakeableHint'
 import useFetchFarmByLpMint from '@/hooks/farm/useFetchFarmByLpMint'
 import axios from 'axios'
+import dexConfig from '@/config/config'
 
 export type IncreaseLiquidityPageQuery = {
   pool_id?: string
@@ -115,7 +116,7 @@ export default function Increase() {
   }, [])
 
   const fetchPoolInfo = async () => {
-    const serverData = await axios.get(`http://62.3.6.226:8080/epsapi/getOnePoolInfo?id=${urlPoolId}`);
+    const serverData = await axios.get(`${dexConfig.serverUrl}/getOnePoolInfo?id=${urlPoolId}`);
     const poolInfo = serverData.data.poolInfo;
     setPool1({
       mintA: {

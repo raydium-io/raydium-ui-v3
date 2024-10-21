@@ -23,7 +23,7 @@ export default function TokenItem(props: { chooseToken: any }) {
           key={index}
           onClick={() => { props.chooseToken(item.value) }} // Pass the item correctly
         >
-          <Img src={item.value.logoURI} />
+          <Img src={item.value.logoURI} width={"32px"} height={"32px"} />
           <Flex direction="column" width="200px">
             <Text fontSize="sm">{item.value.symbol}</Text>
             <Text fontSize="xs" color={colors.textSecondary}>

@@ -1,13 +1,13 @@
 const staticChartData = {
   '15m': [
-    { time: 1633035600, open: 300, high: 302, low: 299, close: 301, volume: 50 },
-    { time: 1633039200, open: 301, high: 303, low: 300, close: 302, volume: 55 },
-    { time: 1633042800, open: 302, high: 304, low: 301, close: 303, volume: 60 },
-    { time: 1633046400, open: 303, high: 305, low: 302, close: 304, volume: 65 },
-    { time: 1633050000, open: 304, high: 306, low: 303, close: 305, volume: 70 },
-    { time: 1633053600, open: 305, high: 304, low: 300, close: 302, volume: 50 },
-    { time: 1633057200, open: 302, high: 303, low: 298, close: 299, volume: 45 },
-    { time: 1633060800, open: 299, high: 304, low: 295, close: 297, volume: 40 }
+    { time: 1729169573, open: 300, high: 300, low: 300, close: 310, volume: 1550 },
+    { time: 1729173173, open: 301, high: 310, low: 280, close: 302, volume: 55 },
+    { time: 1729176773, open: 302, high: 320, low: 270, close: 303, volume: 60 },
+    // { time: 1633046400, open: 303, high: 305, low: 302, close: 304, volume: 65 },
+    // { time: 1633050000, open: 304, high: 306, low: 303, close: 305, volume: 70 },
+    // { time: 1633053600, open: 305, high: 304, low: 300, close: 302, volume: 50 },
+    // { time: 1633057200, open: 302, high: 303, low: 298, close: 299, volume: 45 },
+    // { time: 1633060800, open: 299, high: 304, low: 295, close: 297, volume: 40 }
   ],
   '1H': [
     { time: 1633035600, open: 300, high: 302, low: 299, close: 301, volume: 150 },

@@ -67,21 +67,59 @@ export const eclipseTokenList = [{
       "coingeckoId": "solana"
     }
   }
-}, {
-  "key": "Bo6ufYtZ7rRtVX2VryazbYjZSgHExfpXST9Xo3Vd3CyA",
-  "value": {
-    "chainId": 105,
-    "address": "Bo6ufYtZ7rRtVX2VryazbYjZSgHExfpXST9Xo3Vd3CyA",
-    "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-    "decimals": 5,
-    "symbol": "RAY",
-    "name": "RAY Coin",
-    "logoURI": "https://img-v1.raydium.io/icon/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R.png",
-    "tags": [],
-    "priority": 2,
-    "type": "eclipse",
-    "extensions": {
-      "coingeckoId": "solana"
-    }
-  }
-}]
+},
+  //  {
+  //   "key": "Bo6ufYtZ7rRtVX2VryazbYjZSgHExfpXST9Xo3Vd3CyA",
+  //   "value": {
+  //     "chainId": 105,
+  //     "address": "Bo6ufYtZ7rRtVX2VryazbYjZSgHExfpXST9Xo3Vd3CyA",
+  //     "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+  //     "decimals": 5,
+  //     "symbol": "RAY",
+  //     "name": "RAY Coin",
+  //     "logoURI": "https://img-v1.raydium.io/icon/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R.png",
+  //     "tags": [],
+  //     "priority": 2,
+  //     "type": "eclipse",
+  //     "extensions": {
+  //       "coingeckoId": "solana"
+  //     }
+  //   }
+  // }
+]
+
+// export const eclipseTokenList = [{
+//   "key": "So11111111111111111111111111111111111111112",
+//   "value": {
+//     "chainId": 107,
+//     "address": "So11111111111111111111111111111111111111112",
+//     "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+//     "decimals": 9,
+//     "symbol": "ETH",
+//     "name": "ETH Coin",
+//     "logoURI": "https://img-v1.raydium.io/icon/2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk.png",
+//     "tags": [],
+//     "priority": 2,
+//     "type": "ethereum",
+//     "extensions": {
+//       "coingeckoId": "solana"
+//     }
+//   }
+// }, {
+//   "key": "8aGxxN2HuGuCNfBqeBPiMGhJu7aiHeEssUXv9cNVKo82",
+//   "value": {
+//     "address": "8aGxxN2HuGuCNfBqeBPiMGhJu7aiHeEssUXv9cNVKo82",
+//     "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+//     "decimals": 9,
+//     "symbol": "BULLS",
+//     "name": "Eclipse Bulls",
+//     "logoURI": "https://gateway.irys.xyz/JePQyMy6Y9qq5Zj7MG9723t4Kkdy1nUUPy7mcjc12A4",
+//     "tags": [],
+//     "metadata": "https://gateway.irys.xyz/EX7r7meAdUSnJed99JwgqEjnTb57kVr3HxyRsR1zTxRg",
+//     "priority": 2,
+//     "type": "eclipse",
+//     "extensions": {
+//       "coingeckoId": "solana"
+//     }
+//   }
+// }]

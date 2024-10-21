@@ -21,9 +21,10 @@ import { isValidUrl } from '@/utils/url'
 import { setStorageItem, getStorageItem } from '@/utils/localStorage'
 import { retry, isProdEnv } from '@/utils/common'
 import { compare } from 'compare-versions'
+import dexConfig from '@/config/config'
 
 export const defaultNetWork = WalletAdapterNetwork.Testnet // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
-export const defaultEndpoint = "https://testnet.dev2.eclipsenetwork.xyz" // You can also provide a custom RPC endpoint
+export const defaultEndpoint = dexConfig.network // You can also provide a custom RPC endpoint
 export const APR_MODE_KEY = '_r_apr_'
 export const EXPLORER_KEY = '_r_explorer_'
 export const supportedExplorers = [
@@ -298,21 +299,21 @@ export const useAppStore = createStore<AppState>(
 
         let i = 0
         const checkAndSetRpcNode = async () => {
-          const success = await setRpcUrlAct(rpcs[i].url, true, i !== rpcs.length - 1)
-          if (!success) {
-            i++
-            if (i < rpcs.length) {
-              checkAndSetRpcNode()
-            } else {
-              console.error('All RPCs failed.')
-            }
-          }
+          // const success = await setRpcUrlAct(rpcs[i].url, true, i !== rpcs.length - 1)
+          // if (!success) {
+          //   i++
+          //   if (i < rpcs.length) {
+          //     checkAndSetRpcNode()
+          //   } else {
+          //     console.error('All RPCs failed.')
+          //   }
+          // }
         }
 
         const localRpc = getStorageItem(isProdEnv() ? RPC_URL_PROD_KEY : RPC_URL_KEY)
         if (localRpc && isValidUrl(localRpc)) {
-          const success = await setRpcUrlAct(localRpc, true, true)
-          if (!success) checkAndSetRpcNode()
+          // const success = await setRpcUrlAct(localRpc, true, true)
+          // if (!success) checkAndSetRpcNode()
         } else {
           checkAndSetRpcNode()
         }

@@ -8,6 +8,7 @@ import { colors } from '@/theme/cssVariables'
 import { useTranslation } from 'react-i18next'
 import { MoonpayBuy } from '@/components/Moonpay'
 import MoonPayIcon from '@/icons/misc/MoonPayIcon'
+import { WalletName } from '@solana/wallet-adapter-base'
 
 export default function WalletOnramp() {
   const { wallets, select, connected, connecting } = useWallet()
@@ -15,12 +16,16 @@ export default function WalletOnramp() {
   const { setVisible, visible } = useWalletModal()
 
   const handleClose = useCallback(() => setVisible(false), [setVisible])
-  const handleOpen = useCallback(() => setVisible(true), [setVisible])
+  // const handleOpen = useCallback(() => setVisible(true), [setVisible])
 
-  const handleSelectWallet = useEvent((wallet: Wallet) => {
-    select(wallet.adapter.name)
-    handleClose()
-  })
+  // const handleSelectWallet = useEvent((wallet: Wallet) => {
+  //   select(wallet.adapter.name)
+  //   handleClose()
+  // })
+
+  const handleOpen = () => {
+    select(wallets.filter((w) => w.adapter.name === 'Backpack')[0].adapter.name)
+  }
 
   if (connected)
     return (
@@ -49,7 +54,7 @@ export default function WalletOnramp() {
       <Button isLoading={connecting} loadingText="Connecting.." onClick={handleOpen}>
         {t('button.connect_wallet')}
       </Button>
-      <SelectWalletModal wallets={wallets} isOpen={visible} onClose={handleClose} onSelectWallet={handleSelectWallet} />
+      {/* <SelectWalletModal wallets={wallets} isOpen={visible} onClose={handleClose} onSelectWallet={handleSelectWallet} /> */}
     </Box>
   )
 }

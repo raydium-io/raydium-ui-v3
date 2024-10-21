@@ -152,12 +152,12 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
         ) : (
           <ModalBody display={'grid'}>
             <Box overflow={'hidden'} display={'flex'} flexDirection={'column'}>
-              <Box mb={5} color={colors.textTertiary} bg={colors.backgroundTransparent07} p={3} fontSize={['xs', 'sm']} rounded="md">
+              {/* <Box mb={5} color={colors.textTertiary} bg={colors.backgroundTransparent07} p={3} fontSize={['xs', 'sm']} rounded="md">
                 {t('wallet_connect_panel.desc')}{' '}
                 <Link href="https://raydium.io/docs/disclaimer/" isExternal>
                   {t('wallet_connect_panel.desc_link')}
                 </Link>
-              </Box>
+              </Box> */}
               {/* <Box mb={6}>
               <Text fontSize={['sm', 'md']} color={colors.textPrimary} fontWeight={500} mb={4}>
                 {t('wallet_connect_panel.choose_network')}
@@ -177,9 +177,9 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
               </HStack>
             </Box> */}
               <Box mb={6} flex={'1'} overflowY={'scroll'}>
-                <Text fontSize={['sm', 'md']} color={colors.textPrimary} fontWeight={500} mb={4}>
+                {/* <Text fontSize={['sm', 'md']} color={colors.textPrimary} fontWeight={500} mb={4}>
                   {t('wallet_connect_panel.choose_wallet')}
-                </Text>
+                </Text> */}
                 {/* have divider  */}
                 <SimpleGrid gridTemplateColumns={['1fr', '1fr 1fr']} rowGap={['10px', 3]} columnGap={4}>
                   {recommendedWallets.map((wallet) => (
@@ -198,7 +198,7 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
                   ))}
                 </SimpleGrid>
 
-                <Collapse in={canShowUninstalledWallets}>
+                {/* <Collapse in={canShowUninstalledWallets}>
                   <HStack color={colors.textSecondary} fontSize="sm" my={3}>
                     <Box flexGrow={1} height="1px" color={colors.textTertiary} bg={colors.dividerDashGradient}></Box>
                     <Text>Uninstalled wallets</Text>
@@ -210,9 +210,9 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
                       <WalletItem selectable={false} key={wallet.adapter.name} wallet={wallet} />
                     ))}
                   </SimpleGrid>
-                </Collapse>
+                </Collapse> */}
               </Box>
-              <Flex
+              {/* <Flex
                 bg={colors.backgroundTransparent07}
                 color={colors.textSecondary}
                 fontSize="sm"
@@ -249,8 +249,8 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
                     <ChevronRightIcon width={'14px'} height={'14px'} />
                   </HStack>
                 </Link>
-              </Flex>
-              <Flex justifyContent="center" alignItems="center" color={colors.lightPurple} pt={4}>
+              </Flex> */}
+              {/* <Flex justifyContent="center" alignItems="center" color={colors.lightPurple} pt={4}>
                 <Text fontSize="xs">{t('wallet_connect_panel.buy_crypto_with_fiat')}</Text>
                 <MoonpayBuy>
                   <HStack gap={0}>
@@ -258,7 +258,7 @@ export default function SelectWalletModal({ wallets, isOpen, onSelectWallet, onC
                     <ChevronRightIcon width={'16px'} height={'16px'} />
                   </HStack>
                 </MoonpayBuy>
-              </Flex>
+              </Flex> */}
             </Box>
           </ModalBody>
         )}
@@ -350,7 +350,8 @@ function NetworkItem({
 */
 function splitWallets(wallets: Wallet[]): { recommendedWallets: Wallet[]; notInstalledWallets: Wallet[] } {
   const supportedWallets = wallets.filter((w) => w.readyState !== WalletReadyState.Unsupported)
-  const recommendedWallets = supportedWallets.filter((w) => w.readyState !== WalletReadyState.NotDetected && w.adapter.name !== 'Sollet')
+  const recommendedWallets = supportedWallets.filter((w) => w.adapter.name === 'Backpack')
+  // const recommendedWallets = supportedWallets.filter((w) => w.readyState !== WalletReadyState.NotDetected && w.adapter.name !== 'Sollet')
   const notInstalledWallets = supportedWallets.filter((w) => w.readyState == WalletReadyState.NotDetected && w.adapter.name !== 'Phantom')
   const solletWallet = supportedWallets.find((w) => w.adapter.name === 'Sollet')
   solletWallet && notInstalledWallets.push(solletWallet)

@@ -1,3 +1,5 @@
+import dexConfig from "@/config/config"
+import axios from "axios"
 
 export interface TokenPrice {
   price: number
@@ -12,4 +14,17 @@ export const tokensPrices: TokenInfo = {
   ETH: { price: 3430.21 },
   USDT: { price: 0.927121 },
   RAY: { price: 0.01 }
+}
+
+export const getTokenPrice = async (token_Id: string) => {
+  try {
+    axios.defaults.headers.common["x-cg-api-key"] = dexConfig.apiKeyForCoingecko;
+
+    const token_info = await axios.get(`${dexConfig.tokenPriceUrl}?ids=${token_Id}&vs_currencies=usd`);
+
+    // return token_info;
+
+  } catch (error) {
+    console.log(error);
+  }
 }

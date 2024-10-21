@@ -25,7 +25,7 @@ import Tooltip from '@/components/Tooltip'
 // import { MoonpayBuy } from '@/components/Moonpay'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import useResponsive from '@/hooks/useResponsive'
-
+import { eclipseTokenList } from '@/utils/eclipseTokenList'
 import { Heading } from '@chakra-ui/react'
 
 // Custom equivalents for RAYMint and SOLMint
@@ -216,8 +216,8 @@ export default function Swap() {
           <PanelCard ref={klineRef} p={[3, 3]} gap={4} height="100%" {...(isMobile || !isPCChartShown ? { display: 'none' } : {})}>
             <SwapKlinePanel
               untilDate={untilDate.current}
-              baseToken={baseToken}
-              quoteToken={quoteToken}
+              baseToken={eclipseTokenList.filter(token => token.key === inputMint.toString())[0]?.value}
+              quoteToken={eclipseTokenList.filter(token => token.key === outputMint.toString())[0]?.value}
               timeType={selectedTimeType}
               onDirectionToggle={() => setDirectionReverse((b) => !b)}
               onTimeTypeChange={setSelectedTimeType}

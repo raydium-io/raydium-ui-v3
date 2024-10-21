@@ -11,6 +11,7 @@ import { colors } from '@/theme/cssVariables'
 import { NavMoreButtonMenuPanel } from './components/NavMoreButtonMenuPanel'
 import { shrinkToValue } from '@/utils/shrinkToValue'
 import { useTranslation } from 'react-i18next'
+import BridgePageThumbnailIcon from '@/icons/pageNavigation/BridgePageThumbnailIcon'
 
 /** only used is Mobile */
 export function MobileBottomNavbar() {
@@ -54,16 +55,10 @@ export function MobileBottomNavbar() {
         icon={(colorMode) => <PortfolioPageThumbnailIcon colorMode={colorMode} isActive={isPortfolioActive} />}
         isActive={isPortfolioActive}
       />
-      <Menu size="lg" placement="top-end" offset={[0, 30]} /* make menu popup higher */>
-        <MenuButton as="div">
-          <BottomNavbarItem
-            text={t('common.nav_text_more')}
-            icon={(colorMode) => <MorePageThumbnailIcon colorMode={colorMode} isActive={isMoreActive} />}
-            isActive={isMoreActive}
-          />
-        </MenuButton>
-        <NavMoreButtonMenuPanel />
-      </Menu>
+      <div className='chakra-text css-1gw115p c-m-bridge'>
+        <BridgePageThumbnailIcon width={"20px"} height={"20px"} />
+        <a href="https://bridge.eclipse.xyz/" target="_blank" rel="noreferrer">Bridge</a>
+      </div>
     </SimpleGrid>
   )
 }

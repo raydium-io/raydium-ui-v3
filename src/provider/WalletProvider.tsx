@@ -32,6 +32,7 @@ import { type Adapter, type WalletError } from '@solana/wallet-adapter-base'
 import { sendWalletEvent } from '@/api/event'
 import { useEvent } from '@/hooks/useEvent'
 import { LedgerWalletAdapter } from './Ledger/LedgerWalletAdapter'
+import dexConfig from '@/config/config'
 
 initialize()
 
@@ -119,21 +120,7 @@ const App: FC<PropsWithChildren<any>> = ({ children }) => {
   //   [network, endpoint]
   // )
 
-  // useEffect(() => {
-  //   if (rpcNodeUrl) setEndpoint("https://testnet.dev2.eclipsenetwork.xyz")
-  // }, [rpcNodeUrl])
-
-  // const onWalletError = useEvent((error: WalletError, adapter?: Adapter) => {
-  //   if (!adapter) return
-  //   sendWalletEvent({
-  //     type: 'connectWallet',
-  //     walletName: adapter.name,
-  //     connectStatus: 'failure',
-  //     errorMsg: error.message || error.stack
-  //   })
-  // })
-
-  const customClusterEndpoint = "https://testnet.dev2.eclipsenetwork.xyz";
+  const customClusterEndpoint = dexConfig.network;
   const endpoint = customClusterEndpoint;
   const wallets = useMemo(() => [new SalmonWalletAdapter()], []);
 

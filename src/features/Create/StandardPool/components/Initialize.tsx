@@ -40,13 +40,14 @@ import { IDL } from '@/idl/raydium_cp_swap';
 import { Connection, PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY, Keypair, sendAndConfirmTransaction, Transaction } from '@solana/web3.js';
 import { Program, AnchorProvider, BN, utils } from '@project-serum/anchor';
 import { getAmmConfigAddress, getAuthAddress, getPoolAddress, getPoolLpMintAddress, getPoolVaultAddress, getOrcleAccountAddress } from '@/utils/pda'
-import { getOrCreateAssociatedTokenAccount, createSyncNativeInstruction, NATIVE_MINT, getAssociatedTokenAddressSync, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getOrCreateAssociatedTokenAccount, getAccount, createAssociatedTokenAccountInstruction, createSyncNativeInstruction, NATIVE_MINT, getAssociatedTokenAddressSync, TOKEN_PROGRAM_ID, createCloseAccountInstruction, TokenAccountNotFoundError, TokenInvalidAccountOwnerError } from "@solana/spl-token";
 import { ASSOCIATED_PROGRAM_ID } from '@project-serum/anchor/dist/cjs/utils/token'
 import { eclipseTokenList } from '@/utils/eclipseTokenList'
 import Decimal from 'decimal.js'
 import dayjs from 'dayjs'
 import axios from 'axios'
 import { tokensPrices } from '@/utils/tokenInfo'
+import dexConfig from '@/config/config'
 
 export default function Initialize() {
   const { t } = useTranslation()
@@ -92,22 +93,6 @@ export default function Initialize() {
     mint2: outputMint ? solToWSol(outputMint || '').toString() : '',
     type: PoolFetchType.Standard
   })
-
-  // async function getTokenBalanceWeb3(connection: Connection, walletAddress: PublicKey) {
-  //   let tokenAccount = await getAssociatedTokenAddressSync(new PublicKey(inputMint), walletAddress);
-  //   const info = await connection.getTokenAccountBalance(tokenAccount);
-  //   if (info.value.uiAmount == null) throw new Error('No balance found');
-  //   console.log('Balance (using Solana-Web3.js): ', info.value.uiAmount);
-  //   return info.value.uiAmount;
-  // }
-
-  // const poolData: any = useMemo(
-  //   async () => {
-  //     if (wallet.publicKey)
-  //       await getTokenBalanceWeb3(new Connection("https://testnet.dev2.eclipsenetwork.xyz"), wallet.publicKey)
-
-  //   }, [inputMint, outputMint]
-  // )
 
   const existingPools: Map<string, string> = useMemo(
     () =>
@@ -191,28 +176,70 @@ export default function Initialize() {
     };
   }, [wallet]);
 
-  const makeWETH = async (tokenOrder: string) => {
-    if (!anchorWallet) return
-    const connection = new Connection("https://testnet.dev2.eclipsenetwork.xyz", 'confirmed');
+  const unWrapSol = async () => {
+    if (!anchorWallet) return;
+    const connection = new Connection(dexConfig.network, 'confirmed');
 
     let ata = getAssociatedTokenAddressSync(
       NATIVE_MINT, // mint
       anchorWallet?.publicKey // owner
     );
-    console.log(ata.toString())
 
-    let tx = new Transaction().add(
-      // trasnfer SOL
-      SystemProgram.transfer({
-        fromPubkey: anchorWallet.publicKey,
-        toPubkey: ata,
-        lamports: tokenOrder === "base" ? Math.floor(parseFloat(tokenAmount.base) * 1e9) : Math.floor(parseFloat(tokenAmount.quote) * 1e9),
-      }),
-      // sync wrapped SOL balance
-      createSyncNativeInstruction(ata, TOKEN_PROGRAM_ID)
+    const unwrapTransaction = new Transaction().add(
+      createCloseAccountInstruction(
+        ata,
+        anchorWallet.publicKey,
+        anchorWallet.publicKey
+      )
     );
-    const signature = await wallet.sendTransaction(tx, connection);
-    console.log(signature)
+    const signature = await wallet.sendTransaction(unwrapTransaction, connection)
+    // await sendAndConfirmTransaction(connection, unwrapTransaction, [wallet]);
+  }
+
+  const makeWETH = async (tokenOrder: string) => {
+    if (!anchorWallet) return
+    const connection = new Connection(dexConfig.network, 'confirmed');
+
+    let ata = getAssociatedTokenAddressSync(
+      NATIVE_MINT, // mint
+      anchorWallet?.publicKey // owner
+    );
+
+    const ataInfo = await connection.getAccountInfo(ata);
+
+    if (!ataInfo) { //  don't exist token account
+      let tx = new Transaction().add(
+        createAssociatedTokenAccountInstruction(
+          anchorWallet.publicKey,
+          ata,
+          anchorWallet.publicKey,
+          NATIVE_MINT
+        ),
+        // trasnfer SOL
+        SystemProgram.transfer({
+          fromPubkey: anchorWallet.publicKey,
+          toPubkey: ata,
+          lamports: tokenOrder === "base" ? Math.floor(parseFloat(tokenAmount.base) * 1e9) : Math.floor(parseFloat(tokenAmount.quote) * 1e9),
+        }),
+        // sync wrapped SOL balance
+        createSyncNativeInstruction(ata, TOKEN_PROGRAM_ID)
+      );
+      const signature = await wallet.sendTransaction(tx, connection);
+    }
+    else { // when exist token account,
+      let tx = new Transaction().add(
+        // trasnfer SOL
+        SystemProgram.transfer({
+          fromPubkey: anchorWallet.publicKey,
+          toPubkey: ata,
+          lamports: tokenOrder === "base" ? Math.floor(parseFloat(tokenAmount.base) * 1e9) : Math.floor(parseFloat(tokenAmount.quote) * 1e9),
+        }),
+        // sync wrapped SOL balance
+        createSyncNativeInstruction(ata, TOKEN_PROGRAM_ID)
+      );
+      const signature = await wallet.sendTransaction(tx, connection);
+    }
+
     // return tx;
   }
 
@@ -222,20 +249,19 @@ export default function Initialize() {
     if (!baseToken || !quoteToken) return;
     onLoading()
 
-    const connection = new Connection("https://testnet.dev2.eclipsenetwork.xyz", 'confirmed');
+    const connection = new Connection(dexConfig.network, 'confirmed');
     const provider = new AnchorProvider(connection, anchorWallet, AnchorProvider.defaultOptions());
-    const programId = new PublicKey('tmcnqP66JdK5UwnfGWJCy66K9BaJjnCqvoGNYEn9VJv');
+    const programId = new PublicKey(dexConfig.programId);
     const program = new Program(IDL, programId, provider);
 
     try {
-      let config_index = 5;
+      let config_index = 9;
       let tradeFeeRate = new BN(10)
       let protocolFeeRate = new BN(1000)
       let fundFeeRate = new BN(25000)
       let create_fee = new BN(0)
 
       const [ammConfigPDA] = await getAmmConfigAddress(config_index, program.programId);
-
       const info = await connection.getAccountInfo(ammConfigPDA);
       if (info == null || info.data.length == 0) {
         await program.methods
@@ -311,18 +337,6 @@ export default function Initialize() {
         false,
         TOKEN_PROGRAM_ID
       );
-      console.log(token0.toString())
-      console.log(token1.toString())
-      console.log(auth.toString())
-      console.log(poolAddress.toString())
-      console.log(lpMintAddress.toString())
-      console.log(vault0.toString())
-      console.log(vault1.toString())
-      console.log(creatorLpTokenAddress.toString())
-      console.log(observationAddress.toString())
-      console.log(creatorToken0.toString())
-      console.log(creatorToken1.toString())
-
       // const confirmOptions = {
       //   skipPreflight: true,
       // };
@@ -382,8 +396,6 @@ export default function Initialize() {
     //   onFinally: offLoading
     // })
   }
-
-  if (baseToken) console.log(wsolToSolToken(baseToken))
 
   return (
     <VStack borderRadius="20px" w="full" bg={colors.backgroundLight} p={6} spacing={5}>

@@ -36,7 +36,8 @@ import { getOrCreateAssociatedTokenAccount, getAssociatedTokenAddressSync, TOKEN
 import { Connection, PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
 import axios from 'axios'
-import { tokensPrices } from '@/utils/tokenInfo'
+import { getTokenPrice, tokensPrices } from '@/utils/tokenInfo'
+import dexConfig from '@/config/config'
 
 export const DEFAULT_SOL_RESERVER = 0.01
 export interface TokenInputProps extends Pick<TokenSelectDialogProps, 'filterFn'> {
@@ -173,6 +174,7 @@ function TokenInput(props: TokenInputProps) {
   })
   const value = shakeValueDecimal(inputValue, token?.decimals)
   const price = tokensPrices[token?.symbol || '']?.price
+  const [priceFromCoingecko, setPriceFromCoingecko] = useState<number | null>(null);
   const [totalPrice, setTotalPrice] = useState<number | "">("");
   // const totalPrice = price && value ? new Decimal(price ?? 0).mul(value).toString() : ''
 
@@ -192,16 +194,10 @@ function TokenInput(props: TokenInputProps) {
   const [freezeToken, setFreezeToken] = useState<TokenInfo | ApiV3Token>()
   const [amount, setAmount] = useState(0);
 
-  const getTokenPrice = () => {
-    axios.defaults.headers.common["x-cg-api-key"] = `CG-FFGgJFo6GhYWQTEi7RLo93iw`;
-
-    axios.get(`https://api.coingecko.com/api/v3/simple/token_price/eclipse?contract_addresses=${token?.address}&vs_currencies=usd`)
-      .then(response => console.log(response))
-      .catch(err => console.error(err));
-  }
-
   useEffect(() => {
-    // getTokenPrice();
+    if (token) {
+      getTokenPrice(token.extensions.coingeckoId)
+    }
   }, [])
 
   // const handleValidate = useEvent((value: string) => {
@@ -217,7 +213,7 @@ function TokenInput(props: TokenInputProps) {
 
   const fetchAmount = async () => {
     if (token && wallet.publicKey) {
-      const connection = new Connection("https://testnet.dev2.eclipsenetwork.xyz", 'confirmed');
+      const connection = new Connection(dexConfig.network, 'confirmed');
 
       try {
         if (token.address === "So11111111111111111111111111111111111111112") {
@@ -244,13 +240,14 @@ function TokenInput(props: TokenInputProps) {
 
   useEffect(() => {
     fetchAmount();
-    // getTokenPrice();
-
+    if (token) {
+      getTokenPrice(token.extensions.coingeckoId)
+    }
   }, [token])
 
   const getBalanceString = useEvent(async (half: boolean) => {
     if (token && wallet.publicKey) {
-      const connection = new Connection("https://testnet.dev2.eclipsenetwork.xyz", 'confirmed');
+      const connection = new Connection(dexConfig.network, 'confirmed');
 
       let tokenAccount = await getAssociatedTokenAddressSync(new PublicKey(token?.address), wallet.publicKey);
       const info = await connection.getTokenAccountBalance(tokenAccount);

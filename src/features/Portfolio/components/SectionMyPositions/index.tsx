@@ -30,19 +30,19 @@ export default function SectionMyPositions() {
     value: PositionTabValues
     label: string
   }[] = [
-    {
-      value: 'concentrated',
-      label: t('portfolio.section_positions_tab_clmm')
-    },
-    {
-      value: 'standard',
-      label: t('portfolio.section_positions_tab_standard')
-    },
-    {
-      value: 'staked RAY',
-      label: t('portfolio.section_positions_tab_staking')
-    }
-  ]
+      {
+        value: 'concentrated',
+        label: t('portfolio.section_positions_tab_clmm')
+      },
+      {
+        value: 'standard',
+        label: t('portfolio.section_positions_tab_standard')
+      },
+      {
+        value: 'staked RAY',
+        label: t('portfolio.section_positions_tab_staking')
+      }
+    ]
   const connected = useAppStore((s) => s.connected)
   const owner = useAppStore((s) => s.publicKey)
 
@@ -144,15 +144,15 @@ export default function SectionMyPositions() {
             />
           </Flex>
         </GridItem>
-        <GridItem area="tabs" justifySelf={['right', 'left']}>
+        {/* <GridItem area="tabs" justifySelf={['right', 'left']}>
           <Desktop>
             <Tabs size="md" variant="rounded" items={tabs} onChange={onTabChange} value={currentTab} />
           </Desktop>
           <Mobile>
             <Select variant="roundedFilledFlowDark" items={tabs} onChange={onTabChange} value={currentTab} />
           </Mobile>
-        </GridItem>
-        <GridItem area={'action'} justifySelf={['stretch', 'stretch', 'right']}>
+        </GridItem> */}
+        {/* <GridItem area={'action'} justifySelf={['stretch', 'stretch', 'right']}>
           {connected ? (
             <Box py="6px" px={4} bg={colors.transparentContainerBg} borderRadius="12px">
               <HStack justify={'space-between'} gap={8}>
@@ -199,7 +199,7 @@ export default function SectionMyPositions() {
               </HStack>
             </Box>
           ) : null}
-        </GridItem>
+        </GridItem> */}
       </Grid>
       {connected ? (
         isFocusClmmTab ? (

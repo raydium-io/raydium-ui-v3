@@ -82,62 +82,6 @@ export default function useSwap(props: {
     };
   }, [wallet]);
 
-
-  const getPoolInfo = async () => {
-
-    // const connection = new Connection("https://testnet.dev2.eclipsenetwork.xyz", 'confirmed');
-    // const provider = new AnchorProvider(connection, anchorWallet, AnchorProvider.defaultOptions());
-    // const programId = new PublicKey('8PzREVMxRooeR2wbihZdp2DDTQMZkX9MVzfa8ZV615KW');
-    // const program = new Program(IDL, programId, provider);
-
-    // // 
-    // const inputToken = new PublicKey(inputMint);
-    // const outputToken = new PublicKey(outputMint);
-    // const inputTokenProgram = TOKEN_PROGRAM_ID;
-    // const outputTokenProgram = TOKEN_PROGRAM_ID;
-    // const inputTokenAccountAddr = getAssociatedTokenAddressSync(
-    //   inputToken,
-    //   anchorWallet.publicKey,
-    //   false,
-    //   inputTokenProgram
-    // );
-    // const inputTokenAccountBefore = await getAccount(
-    //   connection,
-    //   inputTokenAccountAddr,
-    //   "processed",
-    //   inputTokenProgram
-    // );
-
-    // //
-    // let amount_in = isSwapBaseIn ? new BN(parseFloat(amountIn) * 100_000_000) : new BN(parseFloat(inputAmount) * 100_000_000);
-    // let amount_out = isSwapBaseIn ? new BN(parseFloat(outputAmount) * 100_000_000) : new BN(parseFloat(amountIn) * 100_000_000);
-
-    // console.log(amountIn)
-    // console.log(inputAmount)
-    // console.log(amount_in)
-
-    // console.log(outputAmount)
-    // console.log(amountIn)
-    // console.log(amount_out)
-
-    // let config_index = 0;
-
-    // const [address, _] = await getAmmConfigAddress(
-    //   config_index,
-    //   program.programId
-    // );
-    // const configAddress = address;
-
-    // const [auth] = await getAuthAddress(program.programId);
-    // const [poolAddress] = await getPoolAddress(
-    //   configAddress,
-    //   inputToken,
-    //   outputToken,
-    //   program.programId
-    // );
-
-  }
-
   return {
     response: data,
     data: data?.data,

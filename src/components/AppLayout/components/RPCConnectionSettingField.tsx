@@ -22,7 +22,7 @@ export function RPCConnectionSettingField() {
   const handleSwitchCustomRpc = useEvent(async () => {
     if (!isValidUrl(customUrl)) return
     onLoading()
-    await setRpcUrlAct(customUrl)
+    // await setRpcUrlAct(customUrl)
     offLoading()
   })
 
@@ -51,7 +51,7 @@ export function RPCConnectionSettingField() {
                 size="sm"
                 onClick={() => {
                   offCustom()
-                  if (rpcNodeUrl !== rpc.url) setRpcUrlAct(rpc.url)
+                  // if (rpcNodeUrl !== rpc.url) setRpcUrlAct(rpc.url)
                 }}
               >
                 <Flex gap={1.5}>{rpc.name}</Flex>

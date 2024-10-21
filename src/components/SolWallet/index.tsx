@@ -19,12 +19,16 @@ export default function SolWallet() {
   const { isOpen: isWalletDrawerShown, onOpen, onClose } = useDisclosure()
 
   const handleClose = useCallback(() => setVisible(false), [setVisible])
-  const handleOpen = useCallback(() => setVisible(true), [setVisible])
+  // const handleOpen = useCallback(() => setVisible(true), [setVisible])
 
-  const handleSelectWallet = useEvent((wallet: Wallet) => {
-    select(wallet.adapter.name)
-    handleClose()
-  })
+  // const handleSelectWallet = useEvent((wallet: Wallet) => {
+  //   select(wallets.filter((w) => w.adapter.name === 'Backpack')[0].adapter.name)
+  //   handleClose()
+  // })
+
+  const handleOpen = () => {
+    select(wallets.filter((w) => w.adapter.name === 'Backpack')[0].adapter.name)
+  }
 
   if (connected)
     return (
@@ -62,7 +66,7 @@ export default function SolWallet() {
       <Button isLoading={connecting} loadingText="Connecting.." onClick={handleOpen}>
         {t('button.connect_wallet')}
       </Button>
-      <SelectWalletModal wallets={wallets} isOpen={visible} onClose={handleClose} onSelectWallet={handleSelectWallet} />
+      {/* <SelectWalletModal wallets={wallets} isOpen={visible} onClose={handleClose} onSelectWallet={handleSelectWallet} /> */}
     </Box>
   )
 }

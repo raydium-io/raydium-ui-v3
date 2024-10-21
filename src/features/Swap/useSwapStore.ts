@@ -136,8 +136,6 @@ export const useSwapStore = createStore<SwapStore>(
 
         const signedTxs = await signAllTransactions(allTx)
 
-        console.log('simulate tx string:', signedTxs.map(txToBase64))
-
         const txLength = signedTxs.length
         const { toastId, handler } = getDefaultToastData({
           txLength,

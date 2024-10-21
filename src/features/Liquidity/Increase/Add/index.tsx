@@ -22,6 +22,7 @@ import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 import { Program, AnchorProvider, BN, utils } from '@project-serum/anchor';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { getAmmConfigAddress, getAuthAddress, getPoolAddress, getPoolLpMintAddress, getPoolVaultAddress, getOrcleAccountAddress } from '@/utils/pda'
+import dexConfig from '@/config/config'
 
 // Custom type interfaces to replace Raydium SDK types
 interface PoolInfo {
@@ -107,9 +108,9 @@ export default function AddLiquidity({
     try {
       if (anchorWallet && tokenPair.base && tokenPair.quote && pool) {
 
-        const connection = new Connection("https://testnet.dev2.eclipsenetwork.xyz", 'confirmed');
+        const connection = new Connection(dexConfig.network, 'confirmed');
         const provider = new AnchorProvider(connection, anchorWallet, AnchorProvider.defaultOptions());
-        const programId = new PublicKey('tmcnqP66JdK5UwnfGWJCy66K9BaJjnCqvoGNYEn9VJv');
+        const programId = new PublicKey(dexConfig.programId);
         const program = new Program(IDL, programId, provider);
 
         const token0 = new PublicKey(tokenPair.base?.address)

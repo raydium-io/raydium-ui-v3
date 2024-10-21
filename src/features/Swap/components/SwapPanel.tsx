@@ -37,6 +37,7 @@ import { getAmmConfigAddress, getAuthAddress, getPoolAddress, getPoolLpMintAddre
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import ExternalLink from '@/icons/misc/ExternalLink'
 import { eclipseTokenList } from '@/utils/eclipseTokenList'
+import dexConfig from '@/config/config'
 
 export function SwapPanel({
   onInputMintChange,
@@ -62,6 +63,7 @@ export function SwapPanel({
     (s) => [s.getTokenBalanceUiAmount, s.fetchTokenAccountAct, s.refreshTokenAccTime],
     shallow
   )
+  const [swapType, setSwapType] = useState<"BaseIn" | "BaseOut">("BaseIn");
   const { isOpen: isSending, onOpen: onSending, onClose: offSending } = useDisclosure()
   const { isOpen: isUnWrapping, onOpen: onUnWrapping, onClose: offUnWrapping } = useDisclosure()
   const { isOpen: isHightRiskOpen, onOpen: onHightRiskOpen, onClose: offHightRiskOpen } = useDisclosure()
@@ -70,7 +72,7 @@ export function SwapPanel({
 
   // const [inputMint, setInputMint] = useState<string>(PublicKey.default.toBase58())
   const [inputMint, setInputMint] = useState<string>(defaultInput)
-  const [swapType, setSwapType] = useState<'BaseIn' | 'BaseOut'>('BaseIn')
+  const [tokenSwapType, setTokenSwapType] = useState<'BaseInput' | 'BaseOutput'>('BaseInput')
 
   // const [outputMint, setOutputMint] = useState<string>(RAYMint.toBase58())
   const [outputMint, setOutputMint] = useState<string>(defaultOutput)
@@ -220,6 +222,14 @@ export function SwapPanel({
   )
 
   const handleChangeSide = useEvent(() => {
+    // token change
+    setTokenInput(tokenOutput)
+    setTokenOutput(tokenInput)
+    // chang token swap type
+    if (tokenSwapType === "BaseInput")
+      setTokenSwapType("BaseOutput")
+    else setTokenSwapType("BaseInput")
+
     setInputMint(outputMint)
     setOutputMint(inputMint)
     setSwapPairCache({
@@ -253,19 +263,16 @@ export function SwapPanel({
   }, [inputMint, outputMint])
 
   const fetchAmount = async () => {
-    console.log("aaaaaaaa")
-    console.log(`${inputMint} ---- ${outputMint}`)
     if (!inputMint || !outputMint) return;
-    console.log("bbbbbbbbbbbbbbbbbbbb")
     try {
-      const connection = new Connection("https://testnet.dev2.eclipsenetwork.xyz", 'confirmed');
-      const programId = new PublicKey('tmcnqP66JdK5UwnfGWJCy66K9BaJjnCqvoGNYEn9VJv');
+      const connection = new Connection(dexConfig.network, 'confirmed');
+      const programId = new PublicKey(dexConfig.programId);
 
       // 
       const inputToken = new PublicKey(inputMint);
       const outputToken = new PublicKey(outputMint);
 
-      let config_index = 5;
+      let config_index = 9;
 
       const [address, _] = await getAmmConfigAddress(
         config_index,
@@ -291,13 +298,8 @@ export function SwapPanel({
         programId
       );
 
-      console.log(inputVault.toString())
-      console.log(outputVault.toString())
-
       let balance1 = await connection.getTokenAccountBalance(inputVault)
       let balance2 = await connection.getTokenAccountBalance(outputVault)
-      console.log(balance1.value.uiAmount)
-      console.log(balance2.value.uiAmount)
 
       if (balance2.value.uiAmount && balance1.value.uiAmount) {
         setBalance({
@@ -305,12 +307,16 @@ export function SwapPanel({
           balance2: balance2.value.uiAmount
         });
         if (amountIn !== "") {
-          if (swapType === "BaseIn")
+          if (swapType === "BaseIn") {
             // delta_y = (delta_x * y) / (x + delta_x)
+            setInputAmount(amountIn)
             setOutputAmount((balance.balance2 * parseFloat(amountIn) / (balance.balance1 + parseFloat(amountIn))).toString())
-          else
+          }
+          else {
             // delta_x = (x * delta_y) / (y - delta_y)
             setInputAmount((balance.balance1 * parseFloat(amountIn) / (balance.balance2 - parseFloat(amountIn))).toString())
+            setOutputAmount(amountIn)
+          }
         }
       }
 
@@ -325,7 +331,6 @@ export function SwapPanel({
   // }, [balance.balance1, balance.balance2])
 
   useEffect(() => {
-    console.log(balance.balance1 + "    " + balance.balance2 + "      " + amountIn)
     if (balance.balance1 !== 0 && balance.balance2 !== 0 && amountIn !== "") {
       if (swapType === "BaseIn")
         // delta_y = (delta_x * y) / (x + delta_x)
@@ -338,7 +343,7 @@ export function SwapPanel({
 
   const makeWETH = async () => {
     if (!anchorWallet) return
-    const connection = new Connection("https://testnet.dev2.eclipsenetwork.xyz", 'confirmed');
+    const connection = new Connection(dexConfig.network, 'confirmed');
 
     let ata = getAssociatedTokenAddressSync(
       NATIVE_MINT, // mint
@@ -356,7 +361,6 @@ export function SwapPanel({
       createSyncNativeInstruction(ata, TOKEN_PROGRAM_ID)
     );
     const signature = await wallet.sendTransaction(tx, connection);
-    console.log(signature)
     // return tx;
   }
 
@@ -366,9 +370,9 @@ export function SwapPanel({
 
     onSending()
 
-    const connection = new Connection("https://testnet.dev2.eclipsenetwork.xyz", 'confirmed');
+    const connection = new Connection(dexConfig.network, 'confirmed');
     const provider = new AnchorProvider(connection, anchorWallet, AnchorProvider.defaultOptions());
-    const programId = new PublicKey('tmcnqP66JdK5UwnfGWJCy66K9BaJjnCqvoGNYEn9VJv');
+    const programId = new PublicKey(dexConfig.programId);
     const program = new Program(IDL, programId, provider);
 
     const inputTokenAccountAddr1 = getAssociatedTokenAddressSync(
@@ -398,135 +402,252 @@ export function SwapPanel({
 
       onSending()
 
-      const connection = new Connection("https://testnet.dev2.eclipsenetwork.xyz", 'confirmed');
+      const connection = new Connection(dexConfig.network, 'confirmed');
       const provider = new AnchorProvider(connection, anchorWallet, AnchorProvider.defaultOptions());
-      const programId = new PublicKey('tmcnqP66JdK5UwnfGWJCy66K9BaJjnCqvoGNYEn9VJv');
+      const programId = new PublicKey(dexConfig.programId);
       const program = new Program(IDL, programId, provider);
 
-      // 
-      const inputToken = new PublicKey(inputMint);
-      const outputToken = new PublicKey(outputMint);
-      const inputTokenProgram = TOKEN_PROGRAM_ID;
-      const outputTokenProgram = TOKEN_PROGRAM_ID;
+      if (tokenSwapType === "BaseInput") {
+        const inputToken = new PublicKey(inputMint);
+        const outputToken = new PublicKey(outputMint);
 
-      if (inputToken.toString() === NATIVE_MINT.toString()) {
-        await makeWETH()
+        const inputTokenProgram = new PublicKey(eclipseTokenList.filter(i => i.key === inputMint)[0].value.programId);
+        const outputTokenProgram = new PublicKey(eclipseTokenList.filter(i => i.key === outputMint)[0].value.programId);
+
+        if (inputToken.toString() === NATIVE_MINT.toString()) {
+          await makeWETH()
+        }
+
+        const inputTokenAccountAddr = getAssociatedTokenAddressSync(
+          inputToken,
+          anchorWallet.publicKey,
+          false,
+          inputTokenProgram
+        );
+        const inputTokenAccountBefore = await getAccount(
+          connection,
+          inputTokenAccountAddr,
+          "processed",
+          inputTokenProgram
+        );
+
+        //
+        let amount_in = isSwapBaseIn ? new BN(parseFloat(inputAmount) * Math.pow(10, eclipseTokenList.filter(i => i.key === inputMint)[0].value.decimals)) : new BN(parseFloat(inputAmount) * Math.pow(10, eclipseTokenList.filter(i => i.key === inputMint)[0].value.decimals));
+        // let amount_out = isSwapBaseIn ? new BN(parseFloat(outputAmount) * 100_000_000) : new BN(parseFloat(amountIn) * 100_000_000);
+
+        let config_index = 9;
+
+        const [address, _] = await getAmmConfigAddress(
+          config_index,
+          program.programId
+        );
+        const configAddress = address;
+
+        const [auth] = await getAuthAddress(program.programId);
+        const [poolAddress] = await getPoolAddress(
+          configAddress,
+          inputToken,
+          outputToken,
+          program.programId
+        );
+        const [inputVault] = await getPoolVaultAddress(
+          poolAddress,
+          inputToken,
+          program.programId
+        );
+        const [outputVault] = await getPoolVaultAddress(
+          poolAddress,
+          outputToken,
+          program.programId
+        );
+
+        let balance1 = await connection.getTokenAccountBalance(inputVault)
+        let balance2 = await connection.getTokenAccountBalance(outputVault)
+
+        const inputTokenAccount = getAssociatedTokenAddressSync(
+          inputToken,
+          anchorWallet.publicKey,
+          false,
+          inputTokenProgram
+        );
+        const outputTokenAccount = getAssociatedTokenAddressSync(
+          outputToken,
+          anchorWallet.publicKey,
+          false,
+          outputTokenProgram
+        );
+        const [observationAddress] = await getOrcleAccountAddress(
+          poolAddress,
+          program.programId
+        );
+
+        const tx = await program.methods
+          .swapBaseInput(amount_in, new BN(0))
+          .accounts({
+            payer: anchorWallet.publicKey,
+            authority: auth,
+            ammConfig: configAddress,
+            poolState: poolAddress,
+            inputTokenAccount,
+            outputTokenAccount,
+            inputVault,
+            outputVault,
+            inputTokenProgram: inputTokenProgram,
+            outputTokenProgram: outputTokenProgram,
+            inputTokenMint: inputToken,
+            outputTokenMint: outputToken,
+            observationState: observationAddress,
+          })
+          .rpc();
+
+        if (outputMint === "So11111111111111111111111111111111111111112") {
+          await unWrapWSol();
+        }
+
+        toastSubject.next({
+          title: 'Swap completed!',
+          description: (
+            <Box>
+              You swapped successfully
+            </Box>
+          ),
+          detail: (
+            <Flex align="center" gap={1} opacity={0.5} onClick={() => { window.open(`https://solscan.io/tx/${tx}?cluster=custom&customUrl=${dexConfig.network}`) }} >
+              View transaction details <ExternalLink />
+            </Flex>
+          ),
+          status: 'success',
+          isClosable: false,
+          duration: 5000
+        })
+
+        const inputTokenAccountAfter = await getAccount(
+          connection,
+          inputTokenAccountAddr,
+          "processed",
+          inputTokenProgram
+        );
+
+        offSending()
+      }
+      else {
+        const inputToken = new PublicKey(outputMint);
+        const outputToken = new PublicKey(inputMint);
+
+        const inputTokenProgram = new PublicKey(eclipseTokenList.filter(i => i.key === outputMint)[0].value.programId);
+        const outputTokenProgram = new PublicKey(eclipseTokenList.filter(i => i.key === inputMint)[0].value.programId);
+
+        // if (outputToken.toString() === NATIVE_MINT.toString()) {
+        //   await makeWETH()
+        // }
+
+        const inputTokenAccountAddr = getAssociatedTokenAddressSync(
+          inputToken,
+          anchorWallet.publicKey,
+          false,
+          inputTokenProgram
+        );
+        const inputTokenAccountBefore = await getAccount(
+          connection,
+          inputTokenAccountAddr,
+          "processed",
+          inputTokenProgram
+        );
+
+        //
+        let amount_in = new BN(parseFloat(outputAmount) * 0.8 * Math.pow(10, eclipseTokenList.filter(i => i.key === outputMint)[0].value.decimals))
+        let amount_out = new BN(parseFloat(inputAmount) * Math.pow(10, eclipseTokenList.filter(i => i.key === inputMint)[0].value.decimals))
+
+        let config_index = 9;
+
+        const [address, _] = await getAmmConfigAddress(
+          config_index,
+          program.programId
+        );
+        const configAddress = address;
+
+        const [auth] = await getAuthAddress(program.programId);
+        const [poolAddress] = await getPoolAddress(
+          configAddress,
+          inputToken,
+          outputToken,
+          program.programId
+        );
+
+        const [inputVault] = await getPoolVaultAddress(
+          poolAddress,
+          inputToken,
+          program.programId
+        );
+        const [outputVault] = await getPoolVaultAddress(
+          poolAddress,
+          outputToken,
+          program.programId
+        );
+
+        let balance1 = await connection.getTokenAccountBalance(inputVault)
+        let balance2 = await connection.getTokenAccountBalance(outputVault)
+
+        const inputTokenAccount = getAssociatedTokenAddressSync(
+          inputToken,
+          anchorWallet.publicKey,
+          false,
+          inputTokenProgram
+        );
+        const outputTokenAccount = getAssociatedTokenAddressSync(
+          outputToken,
+          anchorWallet.publicKey,
+          false,
+          outputTokenProgram
+        );
+        const [observationAddress] = await getOrcleAccountAddress(
+          poolAddress,
+          program.programId
+        );
+
+        const tx = await program.methods
+          .swapBaseOutput(amount_in, amount_out)
+          .accounts({
+            payer: anchorWallet.publicKey,
+            authority: auth,
+            ammConfig: configAddress,
+            poolState: poolAddress,
+            inputTokenAccount,
+            outputTokenAccount,
+            inputVault,
+            outputVault,
+            inputTokenProgram: inputTokenProgram,
+            outputTokenProgram: outputTokenProgram,
+            inputTokenMint: inputToken,
+            outputTokenMint: outputToken,
+            observationState: observationAddress,
+          })
+          .rpc();
+
+        if (inputMint === "So11111111111111111111111111111111111111112") {
+          await unWrapWSol();
+        }
+
+        toastSubject.next({
+          title: 'Swap completed!',
+          description: (
+            <Box>
+              You swapped successfully
+            </Box>
+          ),
+          detail: (
+            <Flex align="center" gap={1} opacity={0.5} onClick={() => { window.open(`https://solscan.io/tx/${tx}?cluster=custom&customUrl=${dexConfig.network}`) }} >
+              View transaction details <ExternalLink />
+            </Flex>
+          ),
+          status: 'success',
+          isClosable: false,
+          duration: 5000
+        })
+
+        offSending()
       }
 
-      const inputTokenAccountAddr = getAssociatedTokenAddressSync(
-        inputToken,
-        anchorWallet.publicKey,
-        false,
-        inputTokenProgram
-      );
-      const inputTokenAccountBefore = await getAccount(
-        connection,
-        inputTokenAccountAddr,
-        "processed",
-        inputTokenProgram
-      );
-
-      //
-      let amount_in = isSwapBaseIn ? new BN(parseFloat(amountIn) * Math.pow(10, eclipseTokenList.filter(i => i.key === inputMint)[0].value.decimals)) : new BN(parseFloat(inputAmount) * Math.pow(10, eclipseTokenList.filter(i => i.key === inputMint)[0].value.decimals));
-      // let amount_out = isSwapBaseIn ? new BN(parseFloat(outputAmount) * 100_000_000) : new BN(parseFloat(amountIn) * 100_000_000);
-
-      let config_index = 5;
-
-      const [address, _] = await getAmmConfigAddress(
-        config_index,
-        program.programId
-      );
-      const configAddress = address;
-
-      const [auth] = await getAuthAddress(program.programId);
-      const [poolAddress] = await getPoolAddress(
-        configAddress,
-        inputToken,
-        outputToken,
-        program.programId
-      );
-      console.log(poolAddress.toString())
-
-      const [inputVault] = await getPoolVaultAddress(
-        poolAddress,
-        inputToken,
-        program.programId
-      );
-      const [outputVault] = await getPoolVaultAddress(
-        poolAddress,
-        outputToken,
-        program.programId
-      );
-
-      let balance1 = await connection.getTokenAccountBalance(inputVault)
-      let balance2 = await connection.getTokenAccountBalance(outputVault)
-
-      console.log(inputVault.toString())
-      console.log(outputVault.toString())
-      console.log(balance1)
-      console.log(balance2)
-
-      const inputTokenAccount = getAssociatedTokenAddressSync(
-        inputToken,
-        anchorWallet.publicKey,
-        false,
-        inputTokenProgram
-      );
-      const outputTokenAccount = getAssociatedTokenAddressSync(
-        outputToken,
-        anchorWallet.publicKey,
-        false,
-        outputTokenProgram
-      );
-      const [observationAddress] = await getOrcleAccountAddress(
-        poolAddress,
-        program.programId
-      );
-
-      const tx = await program.methods
-        .swapBaseInput(amount_in, new BN(0))
-        .accounts({
-          payer: anchorWallet.publicKey,
-          authority: auth,
-          ammConfig: configAddress,
-          poolState: poolAddress,
-          inputTokenAccount,
-          outputTokenAccount,
-          inputVault,
-          outputVault,
-          inputTokenProgram: inputTokenProgram,
-          outputTokenProgram: outputTokenProgram,
-          inputTokenMint: inputToken,
-          outputTokenMint: outputToken,
-          observationState: observationAddress,
-        })
-        .rpc();
-
-      toastSubject.next({
-        title: 'Swap completed!',
-        description: (
-          <Box>
-            You swapped successfully
-          </Box>
-        ),
-        detail: (
-          <Flex align="center" gap={1} opacity={0.5} onClick={() => { window.open(`https://solscan.io/tx/${tx}?cluster=custom&customUrl=https://testnet.dev2.eclipsenetwork.xyz`) }} >
-            View transaction details <ExternalLink />
-          </Flex>
-        ),
-        status: 'success',
-        isClosable: false,
-        duration: 5000
-      })
-
-      const inputTokenAccountAfter = await getAccount(
-        connection,
-        inputTokenAccountAddr,
-        "processed",
-        inputTokenProgram
-      );
-
-      offSending()
 
       // swapTokenAct({
       //   swapResponse: response as ApiSwapV1OutSuccess,
@@ -627,7 +748,7 @@ export function SwapPanel({
           <SwapPriceUpdatedAlert onConfirm={onPriceUpdatedConfirm} />
         </Box>
       </Collapse>
-      {isSolFeeNotEnough ? (
+      {/* {isSolFeeNotEnough ? (
         <Flex
           rounded="xl"
           p="2"
@@ -642,7 +763,7 @@ export function SwapPanel({
           <WarningIcon style={{ marginTop: '2px', marginRight: '4px' }} stroke={colors.semanticError} />
           <Text>{t('swap.error_sol_fee_not_insufficient', { amount: formatToRawLocaleStr(DEFAULT_SOL_RESERVER) })}</Text>
         </Flex>
-      ) : null}
+      ) : null} */}
       {wsolBalance.isZero ? null : (
         <Flex
           rounded="md"
