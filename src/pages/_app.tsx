@@ -76,15 +76,10 @@ const MyApp = ({ Component, pageProps, lng, breakPoints, ...props }: AppProps & 
             <DynamicContent {...props}>
               {onlyContent ? (
                 <Component {...pageProps} />
-              ) : (
-                <DynamicAppNavLayout overflowHidden={overflowHidden}>
-                  <Component {...pageProps} />
-                </DynamicAppNavLayout>
-              )}
-            </DynamicContent>
-          </MatchBreakpointsContext.Provider>
-          ;
-        </ChakraProvider>
+              </DynamicAppNavLayout>
+            )}
+          </DynamicContent>
+        </MatchBreakpointsContext.Provider>
       </DynamicProviders>
     </>
   )

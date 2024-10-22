@@ -114,94 +114,88 @@ export default function Swap() {
       mt={[0, getVHExpression([0, 800], [32, 1300])]}
       width={!isMobile && isPCChartShown ? 'min(100%, 1300px)' : undefined}
     >
-      <Heading
-        as="h1"
-        fontSize="6xl"
-        fontWeight="extrabold"
-        bgGradient="linear(to-r, cyan.300, pink.400)"
-        bgClip="text"
-        textColor="transparent"
-      >
-        TurboSwap <br />
-      </Heading>
-      <Heading
-        as="h3"
-        fontSize="3xl"
-        fontWeight="extrabold"
-        bgGradient="linear(to-r, cyan.400, pink.500)"
-        bgClip="text"
-        textColor="transparent"
-      >
-        Lightning Fast DEX on Eclipse Network
-      </Heading>
-
-      <HStack alignSelf="flex-end" my={[1, 0]}>
-        <SlippageAdjuster />
-        <Tooltip
-          label={t('swap.blink_referral_desc', {
-            symbol: outputMint === solMintAddress ? tokenMap.get(inputMint)?.symbol : tokenMap.get(outputMint)?.symbol
-          })}
-        >
-          <Box
-            cursor="pointer"
-            opacity={isBlinkReferralActive ? 1 : 0.6}
-            onClick={() => {
-              if (isBlinkReferralActive) {
-                onCopy()
-                toastSubject.next({
-                  status: 'success',
-                  title: t('common.copy_success')
-                })
-              }
-            }}
-          >
-            <LinkIcon />
-          </Box>
-        </Tooltip>
-        {/* <MoonpayBuy>
-          <DollarIcon />
-        </MoonpayBuy> */}
-
-        {!isMobile && isPCChartShown && (
-          <Box
-            cursor="pointer"
-            onClick={() => {
-              setIsChartLeft((b) => !b)
-            }}
-          >
-            <SwapExchangeIcon />
-          </Box>
-        )}
-        <Box
-          cursor="pointer"
-          onClick={() => {
-            if (!isMobile) {
-              setIsPCChartShown((b) => !b)
-            } else {
-              setIsMobileChartShown(true)
-            }
-          }}
-        >
-          {isMobile || isPCChartShown ? (
-            <SwapChatIcon />
-          ) : (
-            <Box color={colors.textSecondary}>
-              <SwapChatEmptyIcon />
-            </Box>
-          )}
-        </Box>
-      </HStack>
       <Grid
         width="full"
         gridTemplate={[
           `
+            "controls" auto
             "panel" auto
             "kline" auto / auto
           `,
-          isPCChartShown ? (isChartLeft ? `"kline  panel" auto / 1.5fr 1fr` : `"panel kline" auto / 1fr 1.5fr`) : `"panel" auto / auto`
+          isPCChartShown
+            ? isChartLeft
+              ? `". controls" auto "kline  panel" auto / 1.5fr 1fr`
+              : `". controls" auto "panel kline" auto / 1fr 1.5fr`
+            : `"controls" auto "panel" auto / auto`
         ]}
-        gap={[3, isPCChartShown ? 4 : 0]}
+        columnGap={[3, isPCChartShown ? 4 : 0]}
+        rowGap={2}
       >
+        <GridItem gridArea="controls">
+          <HStack justifyContent="space-between" my={[1, 0]}>
+            <MoonpayBuy>
+              <HStack gap={1}>
+                <CreditCardIcon />
+                <Text color={colors.textLink} fontWeight="medium">
+                  Buy
+                </Text>
+              </HStack>
+            </MoonpayBuy>
+            <HStack>
+              <SlippageAdjuster />
+              <Tooltip
+                label={t('swap.blink_referral_desc', {
+                  symbol: outputMint === solMintAddress ? tokenMap.get(inputMint)?.symbol : tokenMap.get(outputMint)?.symbol
+                })}
+              >
+                <Box
+                  cursor="pointer"
+                  opacity={isBlinkReferralActive ? 1 : 0.6}
+                  onClick={() => {
+                    if (isBlinkReferralActive) {
+                      onCopy()
+                      toastSubject.next({
+                        status: 'success',
+                        title: t('common.copy_success')
+                      })
+                    }
+                  }}
+                >
+                  <LinkIcon />
+                </Box>
+              </Tooltip>
+
+              {!isMobile && isPCChartShown && (
+                <Box
+                  cursor="pointer"
+                  onClick={() => {
+                    setIsChartLeft((b) => !b)
+                  }}
+                >
+                  <SwapExchangeIcon />
+                </Box>
+              )}
+              <Box
+                cursor="pointer"
+                onClick={() => {
+                  if (!isMobile) {
+                    setIsPCChartShown((b) => !b)
+                  } else {
+                    setIsMobileChartShown(true)
+                  }
+                }}
+              >
+                {isMobile || isPCChartShown ? (
+                  <SwapChatIcon />
+                ) : (
+                  <Box color={colors.textSecondary}>
+                    <SwapChatEmptyIcon />
+                  </Box>
+                )}
+              </Box>
+            </HStack>
+          </HStack>
+        </GridItem>
         <GridItem ref={swapPanelRef} gridArea="panel">
           <PanelCard p={[3, 6]} flexGrow={['1', 'unset']}>
             <SwapPanel
