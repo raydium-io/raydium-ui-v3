@@ -173,6 +173,12 @@ function AppNavLayout({
             <div className='css-qvoh0p'>
               <a href="https://bridge.eclipse.xyz/" target="_blank" rel="noreferrer">Bridge</a>
             </div>
+            <div className='css-qvoh0p'>
+              <a href="https://x.com/turboswap_svm" target="_blank" rel="noreferrer">Twitter</a>
+            </div>
+            <div className='css-qvoh0p'>
+              <a href="https://t.me/TurboSwap_SVM" target="_blank" rel="noreferrer">Telegram</a>
+            </div>
             {/* <Menu size="lg">
               <MenuButton fontSize={'lg'} px={4} py={2}>
                 <Flex

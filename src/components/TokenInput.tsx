@@ -223,7 +223,7 @@ function TokenInput(props: TokenInputProps) {
           setTotalPrice(price * (accountInfo?.lamports ? accountInfo?.lamports / 1_000_000_000 : 0))
         }
         else {
-          let tokenAccount = await getAssociatedTokenAddressSync(new PublicKey(token?.address), wallet.publicKey);
+          let tokenAccount = await getAssociatedTokenAddressSync(new PublicKey(token?.address), wallet.publicKey, false, new PublicKey(token.programId));
           const info = await connection.getTokenAccountBalance(tokenAccount);
           if (!info) throw new Error('No balance found');
           if (info.value.uiAmount == null) throw new Error('No balance found');

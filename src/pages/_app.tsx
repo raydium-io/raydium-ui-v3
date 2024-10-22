@@ -15,6 +15,8 @@ import '@/components/Toast/toast.css'
 import '@/components/LandingPage/components/tvl.css'
 import '@/components/LandingPage/liquidity.css'
 import '@/components/AppLayout/mobilebottomNavbar.css'
+import '@/components/TokenSelectDialog/components/Tokenitem.css'
+import '@/features/Swap/components/SwapPanel.css'
 import 'react-day-picker/dist/style.css'
 import { GoogleAnalytics } from '@next/third-parties/google'
 

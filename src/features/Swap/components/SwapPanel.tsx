@@ -38,6 +38,7 @@ import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import ExternalLink from '@/icons/misc/ExternalLink'
 import { eclipseTokenList } from '@/utils/eclipseTokenList'
 import dexConfig from '@/config/config'
+import { epsGetPoolInfo } from '@/utils/poolInfo'
 
 export function SwapPanel({
   onInputMintChange,
@@ -69,10 +70,10 @@ export function SwapPanel({
   const { isOpen: isHightRiskOpen, onOpen: onHightRiskOpen, onClose: offHightRiskOpen } = useDisclosure()
   const sendingResult = useRef<ApiSwapV1OutSuccess | undefined>()
   const wsolBalance = getTokenBalanceUiAmount({ mint: NATIVE_MINT.toBase58(), decimals: SOL_INFO.decimals })
+  const [tokenSwapType, setTokenSwapType] = useState<'BaseInput' | 'BaseOutput'>('BaseInput')
 
   // const [inputMint, setInputMint] = useState<string>(PublicKey.default.toBase58())
   const [inputMint, setInputMint] = useState<string>(defaultInput)
-  const [tokenSwapType, setTokenSwapType] = useState<'BaseInput' | 'BaseOutput'>('BaseInput')
 
   // const [outputMint, setOutputMint] = useState<string>(RAYMint.toBase58())
   const [outputMint, setOutputMint] = useState<string>(defaultOutput)
@@ -101,6 +102,18 @@ export function SwapPanel({
     onOutputMintChange?.(outputMint)
     setUrlQuery({ inputMint: mintToUrl(inputMint), outputMint: mintToUrl(outputMint) })
   }, [inputMint, outputMint, cacheLoaded])
+
+  const fetchPoolInfo = async () => {
+    const epsInfo: any = await epsGetPoolInfo();
+    if (!inputMint && !outputMint) {
+      setInputMint(epsInfo[0].mintA.address)
+      setOutputMint(epsInfo[0].mintB.address)
+    }
+  }
+
+  useEffect(() => {
+    fetchPoolInfo()
+  }, [])
 
   const [amountIn, setAmountIn] = useState<string>('')
   const [needPriceUpdatedAlert, setNeedPriceUpdatedAlert] = useState(false)
@@ -182,8 +195,13 @@ export function SwapPanel({
     debounceUpdate({ outputAmount, isComputing })
   }, [outputAmount, isComputing])
 
+  useEffect(() => {
+
+  })
+
   const handleInputChange = useCallback((val: string) => {
     setSwapType('BaseIn')
+    console.log(val)
     setAmountIn(val)
     fetchAmount()
   }, [])
@@ -259,6 +277,11 @@ export function SwapPanel({
   }, [wallet]);
 
   useEffect(() => {
+    setTokenInput(eclipseTokenList.filter(token => token.key === inputMint.toString())[0]?.value)
+    setTokenOutput(eclipseTokenList.filter(token => token.key === outputMint.toString())[0]?.value)
+  }, [inputMint, outputMint])
+
+  useEffect(() => {
     fetchAmount();
   }, [inputMint, outputMint])
 
@@ -268,11 +291,10 @@ export function SwapPanel({
       const connection = new Connection(dexConfig.network, 'confirmed');
       const programId = new PublicKey(dexConfig.programId);
 
-      // 
       const inputToken = new PublicKey(inputMint);
       const outputToken = new PublicKey(outputMint);
 
-      let config_index = 9;
+      let config_index = 1;
 
       const [address, _] = await getAmmConfigAddress(
         config_index,
@@ -306,18 +328,20 @@ export function SwapPanel({
           balance1: balance1.value.uiAmount,
           balance2: balance2.value.uiAmount
         });
-        if (amountIn !== "") {
-          if (swapType === "BaseIn") {
-            // delta_y = (delta_x * y) / (x + delta_x)
-            setInputAmount(amountIn)
-            setOutputAmount((balance.balance2 * parseFloat(amountIn) / (balance.balance1 + parseFloat(amountIn))).toString())
-          }
-          else {
-            // delta_x = (x * delta_y) / (y - delta_y)
-            setInputAmount((balance.balance1 * parseFloat(amountIn) / (balance.balance2 - parseFloat(amountIn))).toString())
-            setOutputAmount(amountIn)
-          }
-        }
+        // if (amountIn !== "") {
+        //   if (swapType === "BaseIn") {
+        //     // delta_y = (delta_x * y) / (x + delta_x)
+        //     setInputAmount(amountIn)
+        //     console.log(amountIn)
+        //     setOutputAmount((balance.balance2 * parseFloat(amountIn) / (balance.balance1 + parseFloat(amountIn))).toString())
+        //   }
+        //   else {
+        //     // delta_x = (x * delta_y) / (y - delta_y)
+        //     setInputAmount((balance.balance1 * parseFloat(amountIn) / (balance.balance2 - parseFloat(amountIn))).toString())
+        //     console.log(amountIn)
+        //     setOutputAmount(amountIn)
+        //   }
+        // }
       }
 
     } catch (error) {
@@ -326,20 +350,20 @@ export function SwapPanel({
 
   }
 
-  // useEffect(() => {
-
-  // }, [balance.balance1, balance.balance2])
-
   useEffect(() => {
     if (balance.balance1 !== 0 && balance.balance2 !== 0 && amountIn !== "") {
-      if (swapType === "BaseIn")
+      if (swapType === "BaseIn") {
         // delta_y = (delta_x * y) / (x + delta_x)
         setOutputAmount((balance.balance2 * parseFloat(amountIn) / (balance.balance1 + parseFloat(amountIn))).toString())
-      else
+        setInputAmount(amountIn)
+      }
+      else {
         // delta_x = (x * delta_y) / (y - delta_y)
         setInputAmount((balance.balance1 * parseFloat(amountIn) / (balance.balance2 - parseFloat(amountIn))).toString())
+        setOutputAmount(amountIn)
+      }
     }
-  }, [amountIn])
+  }, [amountIn, balance.balance1, balance.balance2])
 
   const makeWETH = async () => {
     if (!anchorWallet) return
@@ -394,7 +418,6 @@ export function SwapPanel({
 
   const handleClickSwap = async () => {
     try {
-
       // if (!response) return
       // sendingResult.current = response as ApiSwapV1OutSuccess
       if (!anchorWallet) return;
@@ -424,18 +447,12 @@ export function SwapPanel({
           false,
           inputTokenProgram
         );
-        const inputTokenAccountBefore = await getAccount(
-          connection,
-          inputTokenAccountAddr,
-          "processed",
-          inputTokenProgram
-        );
 
-        //
+
         let amount_in = isSwapBaseIn ? new BN(parseFloat(inputAmount) * Math.pow(10, eclipseTokenList.filter(i => i.key === inputMint)[0].value.decimals)) : new BN(parseFloat(inputAmount) * Math.pow(10, eclipseTokenList.filter(i => i.key === inputMint)[0].value.decimals));
         // let amount_out = isSwapBaseIn ? new BN(parseFloat(outputAmount) * 100_000_000) : new BN(parseFloat(amountIn) * 100_000_000);
 
-        let config_index = 9;
+        let config_index = 1;
 
         const [address, _] = await getAmmConfigAddress(
           config_index,
@@ -509,24 +526,18 @@ export function SwapPanel({
           description: (
             <Box>
               You swapped successfully
+              {`${tx}`}
             </Box>
           ),
           detail: (
             <Flex align="center" gap={1} opacity={0.5} onClick={() => { window.open(`https://solscan.io/tx/${tx}?cluster=custom&customUrl=${dexConfig.network}`) }} >
-              View transaction details <ExternalLink />
+              View transaction details <span className='c-m-pointer'><ExternalLink /></span>
             </Flex>
           ),
           status: 'success',
           isClosable: false,
-          duration: 5000
+          duration: 8000
         })
-
-        const inputTokenAccountAfter = await getAccount(
-          connection,
-          inputTokenAccountAddr,
-          "processed",
-          inputTokenProgram
-        );
 
         offSending()
       }
@@ -558,7 +569,7 @@ export function SwapPanel({
         let amount_in = new BN(parseFloat(outputAmount) * 0.8 * Math.pow(10, eclipseTokenList.filter(i => i.key === outputMint)[0].value.decimals))
         let amount_out = new BN(parseFloat(inputAmount) * Math.pow(10, eclipseTokenList.filter(i => i.key === inputMint)[0].value.decimals))
 
-        let config_index = 9;
+        let config_index = 1;
 
         const [address, _] = await getAmmConfigAddress(
           config_index,
@@ -633,16 +644,17 @@ export function SwapPanel({
           description: (
             <Box>
               You swapped successfully
+              {`${tx}`}
             </Box>
           ),
           detail: (
             <Flex align="center" gap={1} opacity={0.5} onClick={() => { window.open(`https://solscan.io/tx/${tx}?cluster=custom&customUrl=${dexConfig.network}`) }} >
-              View transaction details <ExternalLink />
+              View transaction details <span className='c-m-pointer'><ExternalLink /></span>
             </Flex>
           ),
           status: 'success',
           isClosable: false,
-          duration: 5000
+          duration: 8000
         })
 
         offSending()

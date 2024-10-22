@@ -255,7 +255,7 @@ export default function Initialize() {
     const program = new Program(IDL, programId, provider);
 
     try {
-      let config_index = 9;
+      let config_index = 1;
       let tradeFeeRate = new BN(10)
       let protocolFeeRate = new BN(1000)
       let fundFeeRate = new BN(25000)
@@ -329,13 +329,13 @@ export default function Initialize() {
         token0,
         anchorWallet.publicKey,
         false,
-        TOKEN_PROGRAM_ID
+        new PublicKey(baseToken.programId)
       );
       const creatorToken1 = getAssociatedTokenAddressSync(
         token1,
         anchorWallet.publicKey,
         false,
-        TOKEN_PROGRAM_ID
+        new PublicKey(quoteToken.programId)
       );
       // const confirmOptions = {
       //   skipPreflight: true,
@@ -359,8 +359,8 @@ export default function Initialize() {
           // createPoolFee: new PublicKey("HtPorWESXkST2NLsq7CkjvGSeF4JkvXFvtE8S7MtKeXZ"),
           observationState: observationAddress,
           tokenProgram: TOKEN_PROGRAM_ID,
-          token0Program: TOKEN_PROGRAM_ID,
-          token1Program: TOKEN_PROGRAM_ID,
+          token0Program: new PublicKey(baseToken.programId),
+          token1Program: new PublicKey(quoteToken.programId),
           systemProgram: SystemProgram.programId,
           rent: SYSVAR_RENT_PUBKEY,
         })

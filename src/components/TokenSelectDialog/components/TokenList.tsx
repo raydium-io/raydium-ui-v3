@@ -26,15 +26,8 @@ import Tokenitem from './Tokenitem'
 
 const perPage = 30
 
-// const USDCMint = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
-// const SOLMint = PublicKey.default.toString()
-const RAYMint = '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R'
-// const USDTMint = 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'
-
-const BTCMint = "2F5TprcNBqj2hXVr9oTssabKdf8Zbsf9xStqWjPm8yLo"
 const ETHMint = "So11111111111111111111111111111111111111112"
-const USDTMint = "JChWwuoqpXZZn6WjSCssjaozj4u65qNgvGFsV6eJ2g8S"
-const USDCMint = "5gFSyxjNsuQsZKn9g5L9Ky3cSUvJ6YXqWVuPzmSi8Trx"
+const TURBOMint = "So11111111111111111111111111111111111111112"
 export interface TokenListHandles {
   resetSearch: () => void
 }
@@ -154,19 +147,10 @@ export default forwardRef<
     unsetExtraTokenListAct(token)
   }, [])
 
-  // const USDC = useMemo(() => orgTokenMap.get(USDCMint), [orgTokenMap])
-  // const SOL = useMemo(() => orgTokenMap.get(SOLMint), [orgTokenMap])
-  const RAY = useMemo(() => orgTokenMap.get(RAYMint), [orgTokenMap])
-  // const USDT = useMemo(() => orgTokenMap.get(USDTMint), [orgTokenMap])
-
-  const BTC = useMemo(() => eclipseTokenInfo.filter((i: any) => i.key === BTCMint)[0]?.value, [eclipseTokenInfo])
   const ETH = useMemo(() => eclipseTokenInfo.filter((i: any) => i.key === ETHMint)[0]?.value, [eclipseTokenInfo])
-  const USDT = useMemo(() => eclipseTokenInfo.filter((i: any) => i.key === USDTMint)[0]?.value, [eclipseTokenInfo])
-  const USDC = useMemo(() => eclipseTokenInfo.filter((i: any) => i.key === USDCMint)[0]?.value, [eclipseTokenInfo])
+  const TURBO = useMemo(() => eclipseTokenInfo.filter((i: any) => i.key === TURBOMint)[0]?.value, [eclipseTokenInfo])
 
-  const [usdcDisabled, solDisabled, rayDisabled, usdtDisabled] = filterFn
-    ? [!BTC || !filterFn(BTC), !USDC || !filterFn(USDC)]
-    : [false, false, false, false]
+  const [usdcDisabled, solDisabled, rayDisabled, usdtDisabled] = [false, false, false, false]
 
   const renderTokenItem = useCallback(
     (token: TokenInfo) => (
@@ -204,18 +188,16 @@ export default forwardRef<
         </InputRightAddon>
       </InputGroup>
 
-      <Box pb="8px">
+      {/* <Box pb="8px">
         <Heading fontSize="xs" fontWeight={500} color={colors.textTertiary} py="12px">
           {t('common.popular_tokens')}
         </Heading>
 
         <SimpleGrid gridTemplateColumns={'repeat(auto-fill, minmax(80px, 1fr))'} gap={3}>
-          <PopularTokenCell token={BTC} onClick={(token) => onChooseToken(token)} disabled={usdcDisabled} />
           <PopularTokenCell token={ETH} onClick={(token) => onChooseToken(token)} disabled={solDisabled} />
-          <PopularTokenCell token={USDC} onClick={(token) => onChooseToken(token)} disabled={rayDisabled} />
-          <PopularTokenCell token={USDT} onClick={(token) => onChooseToken(token)} disabled={usdtDisabled} />
+          <PopularTokenCell token={TURBO} onClick={(token) => onChooseToken(token)} disabled={solDisabled} />
         </SimpleGrid>
-      </Box>
+      </Box> */}
 
       <Divider my="10px" color={colors.backgroundTransparent12} />
 

@@ -59,6 +59,14 @@ export function MobileBottomNavbar() {
         <BridgePageThumbnailIcon width={"20px"} height={"20px"} />
         <a href="https://bridge.eclipse.xyz/" target="_blank" rel="noreferrer">Bridge</a>
       </div>
+      <div className='chakra-text css-1gw115p c-m-bridge'>
+        <BridgePageThumbnailIcon width={"20px"} height={"20px"} />
+        <a href="https://x.com/turboswap_svm" target="_blank" rel="noreferrer">Twitter</a>
+      </div>
+      <div className='chakra-text css-1gw115p c-m-bridge'>
+        <BridgePageThumbnailIcon width={"20px"} height={"20px"} />
+        <a href="https://t.me/TurboSwap_SVM" target="_blank" rel="noreferrer">Telegram</a>
+      </div>
     </SimpleGrid>
   )
 }

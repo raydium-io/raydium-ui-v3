@@ -12,7 +12,7 @@ import { eclipseTokenList } from '@/utils/eclipseTokenList'
 export default function TokenItem(props: { chooseToken: any }) {
   return (
     <Flex direction="column" className="iteams">
-      {eclipseTokenList.map((item, index) => (
+      {eclipseTokenList.map((item: any, index) => (
         <Flex
           alignItems="center"
           justifyContent="space-around"
@@ -23,7 +23,7 @@ export default function TokenItem(props: { chooseToken: any }) {
           key={index}
           onClick={() => { props.chooseToken(item.value) }} // Pass the item correctly
         >
-          <Img src={item.value.logoURI} width={"32px"} height={"32px"} />
+          <Img src={item.value.logoURI} width={"32px"} height={"32px"} className='c-m-radius-50' />
           <Flex direction="column" width="200px">
             <Text fontSize="sm">{item.value.symbol}</Text>
             <Text fontSize="xs" color={colors.textSecondary}>
