@@ -294,7 +294,7 @@ export function SwapPanel({
       const inputToken = new PublicKey(inputMint);
       const outputToken = new PublicKey(outputMint);
 
-      let config_index = 1;
+      let config_index = 2;
 
       const [address, _] = await getAmmConfigAddress(
         config_index,
@@ -452,7 +452,7 @@ export function SwapPanel({
         let amount_in = isSwapBaseIn ? new BN(parseFloat(inputAmount) * Math.pow(10, eclipseTokenList.filter(i => i.key === inputMint)[0].value.decimals)) : new BN(parseFloat(inputAmount) * Math.pow(10, eclipseTokenList.filter(i => i.key === inputMint)[0].value.decimals));
         // let amount_out = isSwapBaseIn ? new BN(parseFloat(outputAmount) * 100_000_000) : new BN(parseFloat(amountIn) * 100_000_000);
 
-        let config_index = 1;
+        let config_index = 2;
 
         const [address, _] = await getAmmConfigAddress(
           config_index,
@@ -569,7 +569,7 @@ export function SwapPanel({
         let amount_in = new BN(parseFloat(outputAmount) * 0.8 * Math.pow(10, eclipseTokenList.filter(i => i.key === outputMint)[0].value.decimals))
         let amount_out = new BN(parseFloat(inputAmount) * Math.pow(10, eclipseTokenList.filter(i => i.key === inputMint)[0].value.decimals))
 
-        let config_index = 1;
+        let config_index = 2;
 
         const [address, _] = await getAmmConfigAddress(
           config_index,

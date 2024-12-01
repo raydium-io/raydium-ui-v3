@@ -3,21 +3,79 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import axios from 'axios'
 import { tokensPrices } from './tokenInfo'
 import dexConfig from '@/config/config'
+import { getAmmConfigAddress, getPoolAddress, getPoolVaultAddress, } from "./pda";
+import { eclipseTokenList } from "./eclipseTokenList";
 
-const getTVL = async (poolInfo: { poolId: string, minta: string, mintb: string }) => {
-  const connection = new Connection(dexConfig.network, 'confirmed');
+// const getTVL = async (poolInfo: { poolId: string, minta: string, mintb: string }) => {
+//   const connection = new Connection(dexConfig.network, 'confirmed');
 
-  const tokenAccount1 = getAssociatedTokenAddressSync(new PublicKey(poolInfo.minta.split(",")[1]), new PublicKey(poolInfo.poolId), false, new PublicKey(poolInfo.minta.split(",")[2]))
-  const tokenAccount2 = getAssociatedTokenAddressSync(new PublicKey(poolInfo.mintb.split(",")[1]), new PublicKey(poolInfo.poolId), false, new PublicKey(poolInfo.mintb.split(",")[2]))
+//   const tokenAccount1 = getAssociatedTokenAddressSync(new PublicKey(poolInfo.minta.split(",")[1]), new PublicKey(poolInfo.poolId), false, new PublicKey(poolInfo.minta.split(",")[2]))
+//   const tokenAccount2 = getAssociatedTokenAddressSync(new PublicKey(poolInfo.mintb.split(",")[1]), new PublicKey(poolInfo.poolId), false, new PublicKey(poolInfo.mintb.split(",")[2]))
 
-  let tokenAmount1 = await connection.getTokenAccountBalance(tokenAccount1);
-  let tokenAmount2 = await connection.getTokenAccountBalance(tokenAccount2);
+//   let tokenAmount1 = await connection.getTokenAccountBalance(tokenAccount1);
+//   let tokenAmount2 = await connection.getTokenAccountBalance(tokenAccount2);
 
-  let tvl = tokensPrices[poolInfo.minta.split(",")[4]].price * (tokenAmount1.value.uiAmount !== null ? tokenAmount1.value.uiAmount : 0) +
-    tokensPrices[poolInfo.mintb.split(",")[4]].price * (tokenAmount2.value.uiAmount !== null ? tokenAmount2.value.uiAmount : 0)
+//   let tvl = tokensPrices[poolInfo.minta.split(",")[4]].price * (tokenAmount1.value.uiAmount !== null ? tokenAmount1.value.uiAmount : 0) +
+//     tokensPrices[poolInfo.mintb.split(",")[4]].price * (tokenAmount2.value.uiAmount !== null ? tokenAmount2.value.uiAmount : 0)
 
-  return tvl;
+//   return tvl;
+// }
+
+const getTVL = async (inputMint: string, outputMint: string) => {
+  try {
+    const connection = new Connection(dexConfig.network, 'confirmed');
+    const programId = new PublicKey(dexConfig.programId);
+
+    const inputToken = new PublicKey(inputMint);
+    const outputToken = new PublicKey(outputMint);
+
+    let config_index = 2;
+
+    const [address, _] = await getAmmConfigAddress(
+      config_index,
+      programId
+    );
+    const configAddress = address;
+
+    const [poolAddress] = await getPoolAddress(
+      configAddress,
+      inputToken,
+      outputToken,
+      programId
+    );
+
+    const [inputVault] = await getPoolVaultAddress(
+      poolAddress,
+      inputToken,
+      programId
+    );
+    const [outputVault] = await getPoolVaultAddress(
+      poolAddress,
+      outputToken,
+      programId
+    );
+
+    let balance1 = await connection.getTokenAccountBalance(inputVault)
+    let balance2 = await connection.getTokenAccountBalance(outputVault)
+
+    console.log(balance1, balance2)
+
+    let val = 0;
+
+    if (balance1.value.uiAmount && balance2.value.uiAmount) {
+      val = tokensPrices[eclipseTokenList.filter(item => item.key === inputMint)[0].value.symbol].price * balance1.value.uiAmount +
+        tokensPrices[eclipseTokenList.filter(item => item.key === outputMint)[0].value.symbol].price * balance2.value.uiAmount
+    }
+
+    return val;
+
+  } catch (error) {
+    console.log(error)
+    return 0;
+  }
+
 }
+
 
 export const epsGetPoolInfo = async () => {
 
@@ -28,6 +86,7 @@ export const epsGetPoolInfo = async () => {
     const poolData = [];
 
     for (let i in poolInfo) {
+      const tvl = await getTVL(poolInfo[i].minta.split(",")[1], poolInfo[i].mintb.split(",")[1])
       poolData.push({
         "type": "Standard",
         "programId": dexConfig.programId,
@@ -59,7 +118,7 @@ export const epsGetPoolInfo = async () => {
         "mintAmountB": 28309967.717412,
         "feeRate": 0.0025,
         "openTime": "0",
-        "tvl": parseFloat(poolInfo[i].liq),
+        "tvl": tvl,
         "day": {
           "volume": parseFloat(poolInfo[i].vol),
           "volumeQuote": 7003025684.0527525,

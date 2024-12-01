@@ -51,7 +51,7 @@ export function PoolListHeader({
         </Flex>
       </Hide>
 
-      <Flex justifyContent={'end'} alignItems="center" gap="1" cursor="pointer" onClick={() => handleClickSort('volume')}>
+      {/* <Flex justifyContent={'end'} alignItems="center" gap="1" cursor="pointer" onClick={() => handleClickSort('volume')}>
         {t(`field.${timeBase}_volume`)}
         {sortKey === POOL_SORT_KEY.volume ? <SortUpDownArrow width="12px" height="12px" isDown={Boolean(order)} /> : null}
       </Flex>
@@ -66,7 +66,7 @@ export function PoolListHeader({
       <Flex alignItems="center" gap="1" cursor="pointer" onClick={() => handleClickSort('apr')}>
         {t(`field.${timeBase}_apr`)}
         {sortKey === POOL_SORT_KEY.apr ? <SortUpDownArrow width="12px" height="12px" isDown={Boolean(order)} /> : null}
-      </Flex>
+      </Flex> */}
       <Box />
     </Flex>
   )

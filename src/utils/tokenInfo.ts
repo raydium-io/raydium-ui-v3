@@ -11,9 +11,15 @@ export interface TokenInfo {
 export const tokensPrices: TokenInfo = {
   USDC: { price: 1 },
   BTC: { price: 64572.0 },
-  ETH: { price: 3430.21 },
+  ETH: { price: 2601.35 },
   USDT: { price: 0.927121 },
-  RAY: { price: 0.01 }
+  RAY: { price: 0.01 },
+  BULLS: {
+    price: 0
+  },
+  Turbo: {
+    price: 0
+  }
 }
 
 export const getTokenPrice = async (token_Id: string) => {

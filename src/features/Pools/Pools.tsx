@@ -456,11 +456,11 @@ export default function Pools() {
               />
             </GridItem>
 
-            <GridItem area={'more'}>
+            {/* <GridItem area={'more'}>
               <Button onClick={toggleSubcontrollers} variant="capsule" height={['34px', '40px']} isActive={isCollapseOpen}>
                 <MoreListControllers color={colors.textSecondary} width={listControllerIconSize} height={listControllerIconSize} />
               </Button>
-            </GridItem>
+            </GridItem> */}
 
             <GridItem area={'btn'} justifySelf={'end'}>
               {/* Action Buttons create pool */}

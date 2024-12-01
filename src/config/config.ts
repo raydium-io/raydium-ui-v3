@@ -8,7 +8,6 @@ const dexConfig = {
   /// mainnet
   programId: "CEmyCV87Psf9z9pheAVfYa85auuULHRZo6yv6dN4CEaR",
   network: "https://mainnetbeta-rpc.eclipse.xyz", // mainnet
-  // serverUrl: "http://62.3.6.226:8080/epsapi", // backend
   serverUrl: "http://turboswap.fun/epsapi", // backend
 
   // api key
