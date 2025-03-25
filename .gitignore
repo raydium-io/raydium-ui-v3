@@ -6,6 +6,9 @@
 # vscode local history
 .history
 
+# IDE(webstorm)
+.idea
+
 # testing
 /coverage
 
