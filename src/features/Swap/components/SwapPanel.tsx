@@ -114,8 +114,6 @@ export function SwapPanel({
     tokenInput?.extensions.feeConfig || inputInfo?.extensions.feeConfig,
     tokenOutput?.extensions.feeConfig || outputInfo?.extensions.feeConfig
   ]
-  inputFeeConfig?.newerTransferFee
-  inputFeeConfig?.olderTransferFee
 
   const feeKeys: { input: 'newerTransferFee' | 'olderTransferFee'; output: 'newerTransferFee' | 'olderTransferFee' } = useMemo(() => {
     try {

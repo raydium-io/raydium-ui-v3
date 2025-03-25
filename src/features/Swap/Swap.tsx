@@ -46,7 +46,7 @@ export default function Swap() {
   const klineRef = useRef<HTMLDivElement>(null)
   const { t } = useTranslation()
   const { onCopy, setValue } = useClipboard('')
-  useRefreshEpochInfo()
+  useRefreshEpochInfo(true)
   const [isBlinkReferralActive, setIsBlinkReferralActive] = useState(false)
   const solMintAddress = SOLMint.toBase58()
 
