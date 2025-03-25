@@ -26,6 +26,7 @@ import Tooltip from '@/components/Tooltip'
 import { MoonpayBuy } from '@/components/Moonpay'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
 import useResponsive from '@/hooks/useResponsive'
+import useRefreshEpochInfo from '@/hooks/app/useRefreshEpochInfo'
 
 export default function Swap() {
   // const { inputMint: cacheInput, outputMint: cacheOutput } = getSwapPairCache()
@@ -45,6 +46,7 @@ export default function Swap() {
   const klineRef = useRef<HTMLDivElement>(null)
   const { t } = useTranslation()
   const { onCopy, setValue } = useClipboard('')
+  useRefreshEpochInfo()
   const [isBlinkReferralActive, setIsBlinkReferralActive] = useState(false)
   const solMintAddress = SOLMint.toBase58()
 

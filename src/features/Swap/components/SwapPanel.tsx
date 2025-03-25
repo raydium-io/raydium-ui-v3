@@ -19,7 +19,7 @@ import {
 } from '@chakra-ui/react'
 import { ApiV3Token, RAYMint, SOL_INFO, TokenInfo, TransferFeeDataBaseType } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import shallow from 'zustand/shallow'
 import CircleInfo from '@/icons/misc/CircleInfo'
@@ -60,7 +60,8 @@ export function SwapPanel({
   const [defaultInput, defaultOutput] = [urlInputMint || cacheInput, urlOutputMint || cacheOutput]
 
   const { t, i18n } = useTranslation()
-  const { swap: swapDisabled } = useAppStore().featureDisabled
+  const { swap: swapDisabled } = useAppStore((s) => s.featureDisabled)
+  const epochInfo = useAppStore((s) => s.epochInfo)
   const swapTokenAct = useSwapStore((s) => s.swapTokenAct)
   const unWrapSolAct = useSwapStore((s) => s.unWrapSolAct)
   const tokenMap = useTokenStore((s) => s.tokenMap)
@@ -113,6 +114,28 @@ export function SwapPanel({
     tokenInput?.extensions.feeConfig || inputInfo?.extensions.feeConfig,
     tokenOutput?.extensions.feeConfig || outputInfo?.extensions.feeConfig
   ]
+  inputFeeConfig?.newerTransferFee
+  inputFeeConfig?.olderTransferFee
+
+  const feeKeys: { input: 'newerTransferFee' | 'olderTransferFee'; output: 'newerTransferFee' | 'olderTransferFee' } = useMemo(() => {
+    try {
+      return {
+        input:
+          !epochInfo || !inputFeeConfig || Number(epochInfo.epoch) >= Number(inputFeeConfig.newerTransferFee.epoch)
+            ? 'newerTransferFee'
+            : 'olderTransferFee',
+        output:
+          !epochInfo || !outputFeeConfig || Number(epochInfo.epoch) >= Number(outputFeeConfig.newerTransferFee.epoch)
+            ? 'newerTransferFee'
+            : 'olderTransferFee'
+      }
+    } catch {
+      return {
+        input: 'newerTransferFee',
+        output: 'newerTransferFee'
+      }
+    }
+  }, [epochInfo, inputFeeConfig, outputFeeConfig])
 
   useEffect(() => {
     if (defaultInput) setInputMint(defaultInput)
@@ -421,7 +444,7 @@ export function SwapPanel({
                 px="1"
                 borderRadius="4px"
               >
-                {getMintSymbol({ mint: tokenInput })} ({inputFeeConfig.newerTransferFee.transferFeeBasisPoints / 100}% {t('common.tax')})
+                {getMintSymbol({ mint: tokenInput })} ({inputFeeConfig[feeKeys.input].transferFeeBasisPoints / 100}% {t('common.tax')})
               </Box>
             </Tooltip>
           ) : null}
@@ -440,7 +463,7 @@ export function SwapPanel({
                 px="1"
                 borderRadius="4px"
               >
-                {getMintSymbol({ mint: tokenOutput })} ({outputFeeConfig.newerTransferFee.transferFeeBasisPoints / 100}% {t('common.tax')})
+                {getMintSymbol({ mint: tokenOutput })} ({outputFeeConfig[feeKeys.output].transferFeeBasisPoints / 100}% {t('common.tax')})
               </Box>
             </Tooltip>
           ) : null}
@@ -509,6 +532,16 @@ function Progress() {
 }
 
 function TransferFeeTip({ feeConfig, token }: { feeConfig: TransferFeeDataBaseType; token: TokenInfo }) {
+  const epochInfo = useAppStore((s) => s.epochInfo)
+
+  const feeKey = useMemo(() => {
+    try {
+      return !epochInfo || Number(epochInfo.epoch) >= Number(feeConfig.newerTransferFee.epoch) ? 'newerTransferFee' : 'olderTransferFee'
+    } catch {
+      return 'newerTransferFee'
+    }
+  }, [epochInfo])
+
   const { t } = useTranslation()
   return (
     <>
@@ -540,7 +573,7 @@ function TransferFeeTip({ feeConfig, token }: { feeConfig: TransferFeeDataBaseTy
               <QuestionCircleIcon />
             </ChakraTip>
           </Flex>
-          <Text color={colors.text02}>{feeConfig.newerTransferFee.transferFeeBasisPoints / 100}%</Text>
+          <Text color={colors.text02}>{feeConfig[feeKey].transferFeeBasisPoints / 100}%</Text>
         </Flex>
         <Flex flexDir={['column', 'row']} justifyContent="space-between" gap={[0, 2]}>
           <Flex alignItems="center" gap="0.5">
@@ -553,7 +586,7 @@ function TransferFeeTip({ feeConfig, token }: { feeConfig: TransferFeeDataBaseTy
           </Flex>
           <Text color={colors.text02}>
             {formatCurrency(
-              new Decimal(feeConfig.newerTransferFee.maximumFee)
+              new Decimal(feeConfig[feeKey].maximumFee)
                 .div(10 ** token.decimals)
                 .toDecimalPlaces(token.decimals)
                 .toString(),
