@@ -186,7 +186,8 @@ export const useAppStore = createStore<AppState>(
         logRequests: !isDev,
         disableFeatureCheck: true,
         loopMultiTxStatus: true,
-        blockhashCommitment: 'finalized'
+        blockhashCommitment: 'finalized',
+        apiRequestTimeout: 20 * 1000
       })
       useTokenStore.getState().extraLoadedTokenList.forEach((t) => {
         const existed = raydium.token.tokenMap.has(t.address)
