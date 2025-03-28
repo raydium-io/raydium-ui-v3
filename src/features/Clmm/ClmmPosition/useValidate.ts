@@ -10,6 +10,7 @@ interface Props {
   tokenAmount: string[]
   balanceA?: string | number
   balanceB?: string | number
+  disabledInput: boolean[]
 }
 
 const numberTransform = yup.number().transform((value) => (isNaN(value) ? 0 : value))
@@ -21,13 +22,13 @@ const schema = (t: TFunction<'translation', undefined, 'translation'>) =>
       .number()
       .transform((value) => (isNaN(value) ? 0 : value))
       .test('is-balanceB-enough', t('error.balance_not_enough') ?? '', function (val) {
-        return new Decimal(val || 0).gte(this.parent.tokenAmount[1])
+        return this.parent.disabledInput[1] || new Decimal(val || 0).gte(this.parent.tokenAmount[1])
       }),
     balanceA: yup
       .number()
       .transform((value) => (isNaN(value) ? 0 : value))
       .test('is-balanceA-enough', t('error.balance_not_enough') ?? '', function (val) {
-        return new Decimal(val || 0).gte(this.parent.tokenAmount[0])
+        return this.parent.disabledInput[0] || new Decimal(val || 0).gte(this.parent.tokenAmount[0])
       }),
     tokenAmount: yup
       .array()

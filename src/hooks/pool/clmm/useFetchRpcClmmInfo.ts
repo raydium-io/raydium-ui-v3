@@ -92,7 +92,7 @@ export default function useFetchRpcClmmInfo(props: {
   )
 
   useEffect(() => {
-    if (data) {
+    if (data && data.data.length) {
       const layoutAccountInfo = PoolInfoLayout.decode(data.data)
       const currentPrice = SqrtPriceMath.sqrtPriceX64ToPrice(
         layoutAccountInfo.sqrtPriceX64,
